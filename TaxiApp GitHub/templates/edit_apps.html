@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Taxi Tracker - Επεξεργασία Apps{% endblock %}
+
+{% block styles %}
+<style>
+    /* Περιορισμός πλάτους για τη φόρμα */
+    .form-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    /* Card styling */
+    .card {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        position: relative; /* Για τυχόν απόλυτη τοποθέτηση αν χρειαστεί στο μέλλον */
+    }
+
+    /* Κουμπί Πίσω */
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        color: #555;
+        font-weight: bold;
+        font-size: 18px;
+        margin-bottom: 10px; /* Απόσταση από τον τίτλο */
+        padding: 0;
+    }
+    .back-link:hover { color: #000; }
+    .back-arrow { font-size: 24px; line-height: 1; }
+
+    /* Τίτλοι και Labels */
+    h2 {
+        text-align: center;
+        margin: 10px 0 20px; /* Λίγο margin πάνω για να μην κολλάει στο 'Πίσω' */
+        font-size: 28px;
+        color: #2c3e50;
+    }
+
+    label {
+        font-weight: bold;
+        display: block;
+        margin: 15px 0 8px;
+        font-size: 22px;
+    }
+
+    /* Inputs */
+    input {
+        width: 100%;
+        padding: 14px;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        font-size: 22px;
+        box-sizing: border-box;
+    }
+    input:focus {
+        border-color: #3498db;
+        outline: none;
+    }
+
+    /* Buttons */
+    .btn {
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        color: white;
+        font-weight: bold;
+        width: 100%;
+        box-sizing: border-box;
+        font-size: 18px;
+    }
+
+    .btn-primary { background: #3498db; }
+    .btn-secondary {
+        background: #95a5a6;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-row {
+        display: flex;
+        gap: 12px;
+        margin-top: 22px;
+    }
+    .btn-row .btn {
+        width: auto; 
+        flex: 1; 
+        min-width: 0;
+    }
+    .btn-row a.btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Mobile Responsive tweaks */
+    @media (max-width: 600px) {
+        .card { padding: 18px; }
+        h2 { font-size: 20px; }
+        label { font-size: 18px; }
+        input { font-size: 16px; padding: 12px; }
+        .btn-row { gap: 10px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="card">
+        <!-- Το κουμπί Πίσω μετακινήθηκε εδώ μέσα -->
+        <a href="{{ url_for('history.history') }}" class="back-link">
+            <span class="back-arrow">&#8592;</span> Πίσω
+        </a>
+
+        <h2>📱 Apps: {{ date }}</h2>
+
+        <form method="POST">
+            <label>FreeNow (€)</label>
+            <input type="number" step="0.01" name="freenow" value="{{ apps.freenow if apps else 0 }}">
+
+            <label>Uber (€)</label>
+            <input type="number" step="0.01" name="uber" value="{{ apps.uber if apps else 0 }}">
+
+            <label>Bolt (€)</label>
+            <input type="number" step="0.01" name="bolt" value="{{ apps.bolt if apps else 0 }}">
+
+            <label>Extras (€)</label>
+            <input type="number" step="0.01" name="extras" value="{{ apps.extras if apps else 0 }}">
+
+            <div class="btn-row">
+                <button type="submit" class="btn btn-primary">💾 Αποθήκευση</button>
+                <a class="btn btn-secondary" href="{{ url_for('history.history') }}">Ακύρωση</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

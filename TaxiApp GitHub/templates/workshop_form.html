@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Taxi Tracker - {{ 'Επεξεργασία' if workshop else 'Νέο' }} Συνεργείο{% endblock %}
+
+{% block styles %}
+<style>
+    .service-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 25px;
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #2c3e50; }
+    
+    /* Input Styling */
+    .form-control, select, textarea, input[type="text"], input[type="number"], input[type="date"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 16px;
+        box-sizing: border-box;
+    }
+    
+    .form-control:focus { border-color: #3498db; outline: none; box-shadow: 0 0 0 3px rgba(52,152,219,0.2); }
+
+    /* Buttons */
+    .btn-save { background: #27ae60; color: white; padding: 12px 25px; border: none; cursor: pointer; font-size: 16px; border-radius: 6px; font-weight: bold; transition: background 0.2s; }
+    .btn-save:hover { background: #219150; }
+    
+    .btn-danger { background: #e74c3c; color: white; padding: 10px 15px; text-decoration: none; border-radius: 6px; font-weight: 500; display: inline-block; transition: background 0.2s; }
+    .btn-danger:hover { background: #c0392b; }
+
+    .btn-cancel { color: #7f8c8d; text-decoration: none; font-weight: 500; padding: 10px 15px; }
+    .btn-cancel:hover { color: #34495e; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="service-container">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h1 style="margin:0;">{{ '🏢 Επεξεργασία' if workshop else '➕ Νέο' }} Συνεργείο</h1>
+        <a href="{{ url_for('services.workshops_list') }}" class="btn-cancel">🔙 Επιστροφή</a>
+    </div>
+    
+    <form method="POST">
+        <div class="form-group">
+            <label>Όνομα</label>
+            <input type="text" name="name" class="form-control" value="{{ workshop.name if workshop else '' }}" required>
+        </div>
+
+        <div class="form-group">
+            <label>Τηλέφωνο</label>
+            <input type="text" name="phone" class="form-control" value="{{ workshop.phone if workshop else '' }}">
+        </div>
+
+        <div class="form-group">
+            <label>Διεύθυνση</label>
+            <input type="text" name="address" class="form-control" value="{{ workshop.address if workshop else '' }}">
+        </div>
+
+        <div style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center; padding-top: 20px; border-top: 1px solid #eee;">
+            <a href="{{ url_for('services.workshops_list') }}" class="btn-cancel">Ακύρωση</a>
+            <button type="submit" class="btn-save">💾 Αποθήκευση</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
