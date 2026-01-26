@@ -1,0 +1,377 @@
+{% extends "base.html" %}
+
+{% block title %}Taxi Tracker - Ιστορικό Διαδρομών{% endblock %}
+
+{% block styles %}
+<style>
+    /* --- Φίλτρα Αναζήτησης --- */
+    .filters-card {
+        background-color: var(--card-bg);
+        padding: 20px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        margin-bottom: 30px;
+    }
+
+    .filters-form {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .form-group label {
+        font-size: 0.9em;
+        font-weight: 500;
+        color: var(--secondary-color);
+    }
+
+    .form-control {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 1em;
+    }
+
+    .btn-search {
+        background-color: var(--accent-color);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .btn-clear {
+            background-color: #95a5a6;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+    }
+
+    /* --- Dashboard Stats (Cards) --- */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .dashboard-card {
+        background-color: var(--card-bg);
+        padding: 20px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        position: relative; /* Για το κουμπάκι edit */
+    }
+
+    .dashboard-card h3 {
+        font-size: 1.1em;
+        color: var(--secondary-color);
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .dashboard-card .value {
+        font-size: 1.8em;
+        font-weight: bold;
+        color: var(--primary-color);
+    }
+
+    .dashboard-card.profit .value { color: var(--success-color); }
+    .dashboard-card.expense .value { color: var(--danger-color); }
+    
+    .sub-text {
+        font-size: 0.85em;
+        color: #7f8c8d;
+        margin-top: 5px;
+    }
+
+    /* Edit Button (Small) */
+    .edit-btn-small {
+        background: none;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 1em;
+        margin-left: 5px;
+        transition: transform 0.2s;
+        vertical-align: middle;
+    }
+    .edit-btn-small:hover { transform: scale(1.2); }
+
+    /* --- Table Styling Specifics --- */
+    .table-container {
+        background-color: var(--card-bg);
+        padding: 20px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        overflow-x: auto;
+        margin-bottom: 30px;
+    }
+
+    .profit-positive { color: var(--success-color); font-weight: bold; }
+    
+    .action-btn {
+        text-decoration: none;
+        padding: 5px;
+        border-radius: 4px;
+        margin-right: 5px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .btn-edit { color: var(--warning-color); }
+    .btn-delete { color: var(--danger-color); background: none; border: none; cursor: pointer; }
+    .btn-edit:hover, .btn-delete:hover { background-color: #ecf0f1; }
+
+    /* --- Side by Side Section --- */
+    .side-by-side {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <h1>📊 Ιστορικό & Στατιστικά</h1>
+
+    <!-- Φίλτρα -->
+    <div class="filters-card">
+        <form method="GET" class="filters-form">
+            <div class="form-group">
+                <label>Από:</label>
+                <input type="date" name="start_date" value="{{ start_date }}" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Έως:</label>
+                <input type="date" name="end_date" value="{{ end_date }}" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Ξενοδοχείο:</label>
+                <select name="hotel" class="form-control">
+                    <option value="">Όλα</option>
+                    {% for h in all_hotels %}
+                    <option value="{{ h['hotel_name'] }}" {% if hotel_filter == h['hotel_name'] %}selected{% endif %}>
+                        {{ h['hotel_name'] }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Προορισμός:</label>
+                <select name="dest" class="form-control">
+                    <option value="">Όλα</option>
+                    {% for d in all_dests %}
+                    <option value="{{ d['dest_name'] }}" {% if dest_filter == d['dest_name'] %}selected{% endif %}>
+                        {{ d['dest_name'] }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <button type="submit" class="btn-search">
+                <span class="material-icons">search</span> Αναζήτηση
+            </button>
+            
+            {% if start_date != '' or end_date != '' %}
+            <a href="{{ url_for('history.history') }}" class="btn-clear">
+                 <span class="material-icons">clear</span> Καθαρισμός
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Dashboard Cards -->
+    <div class="dashboard-grid">
+        
+        <!-- Διαδρομές -->
+        <div class="dashboard-card">
+            <h3><span class="material-icons">local_taxi</span> Διαδρομές ({{ ride_count }})</h3>
+            <div class="value">{{ "%.2f"|format(total_ride_income) }}€</div>
+            <div class="sub-text">Χωρίς Apps</div>
+        </div>
+
+        <!-- Apps (ΜΕ ΚΟΥΜΠΙ EDIT) -->
+        <div class="dashboard-card">
+            <h3>
+                <span class="material-icons">smartphone</span> Apps
+                <!-- ΚΟΥΜΠΙ EDIT: Εμφανίζεται μόνο αν επιλεγεί 1 μέρα -->
+                {% if start_date == end_date %}
+                <a href="{{ url_for('history.edit_apps', date_str=start_date) }}" class="edit-btn-small" title="Επεξεργασία Apps">✏️</a>
+                {% endif %}
+            </h3>
+            <div class="value">{{ "%.2f"|format(total_apps_income) }}€</div>
+            <div class="sub-text">
+                F:{{ "%.0f"|format(apps_breakdown.freenow) }} | U:{{ "%.0f"|format(apps_breakdown.uber) }} | B:{{ "%.0f"|format(apps_breakdown.bolt) }}
+            </div>
+        </div>
+
+        <!-- Έξοδα (ΜΕ ΚΟΥΜΠΙ EDIT) -->
+        <div class="dashboard-card expense">
+            <h3>
+                <span class="material-icons">local_gas_station</span> Έξοδα
+                <!-- ΚΟΥΜΠΙ EDIT: Εμφανίζεται μόνο αν επιλεγεί 1 μέρα -->
+                {% if start_date == end_date %}
+                <a href="{{ url_for('history.edit_expenses', date_str=start_date) }}" class="edit-btn-small" title="Επεξεργασία Εξόδων">✏️</a>
+                {% endif %}
+            </h3>
+            <div class="value">-{{ "%.2f"|format(total_expenses) }}€</div>
+            <div class="sub-text">
+                Καύσιμα: {{ "%.0f"|format(total_fuel) }} | Λοιπά: {{ "%.0f"|format(total_misc) }}
+            </div>
+        </div>
+
+        <!-- Διόδια / Credits -->
+        <div class="dashboard-card expense">
+            <h3><span class="material-icons">toll</span> Διόδια & Credits</h3>
+            <div class="value" style="font-size: 1.5em;">-{{ "%.2f"|format(total_tolls + total_credits_cost) }}€</div>
+            <div class="sub-text">
+                Διόδια: {{ "%.2f"|format(total_tolls) }} | Credits: {{ "%.2f"|format(total_credits_cost) }}
+            </div>
+        </div>
+
+        <!-- Καθαρό Κέρδος -->
+        <div class="dashboard-card profit">
+            <h3><span class="material-icons">savings</span> ΚΑΘΑΡΟ ΚΕΡΔΟΣ</h3>
+            <div class="value">{{ "%.2f"|format(net_profit) }}€</div>
+            <div class="sub-text" style="color: var(--success-color);">
+                Τζίρος: {{ "%.2f"|format(total_revenue) }}€
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Πίνακας Διαδρομών -->
+    <div class="table-container">
+        <h2>📋 Λίστα Διαδρομών</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Ημερομηνία</th>
+                    <th>Ξενοδοχείο</th>
+                    <th>Προορισμός</th>
+                    <th>Είσπραξη</th>
+                    <th>Διόδια</th>
+                    <th>Credits</th>
+                    <th>Κέρδος*</th>
+                    <th>Ενέργειες</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in rides %}
+                <tr>
+                    <td>{{ r.date | format_date }}</td>
+                    <td>{{ r['hotel_name'] }}</td>
+                    <td>{{ r['dest_name'] }}</td>
+                    <td>{{ "%.0f"|format(r['price']) }}€</td>
+                    <td>
+                        {% if r['tolls'] > 0 %}{{ "%.2f"|format(r['tolls']) }}€{% else %}-{% endif %}
+                    </td>
+                    <td>
+                        {% if r['credits_charged'] > 0 %}{{ r['credits_charged'] }}{% else %}-{% endif %}
+                    </td>
+                    <td class="profit-positive">
+                        {{ "%.2f"|format(r['price'] - r['tolls'] - (r['credits_charged'] * 0.5)) }}€
+                    </td>
+                    <td>
+                        <a href="{{ url_for('history.edit_ride', ride_id=r['id'], start_date=start_date, end_date=end_date) }}" class="action-btn btn-edit" title="Επεξεργασία">
+                            <span class="material-icons" style="font-size: 18px;">edit</span>
+                        </a>
+                        <form action="{{ url_for('history.delete_ride', ride_id=r['id'], start_date=start_date, end_date=end_date) }}" method="POST" style="display:inline;">
+                            <button type="submit" class="action-btn btn-delete" title="Διαγραφή">
+                                <span class="material-icons" style="font-size: 18px;">delete</span>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 20px; color: #7f8c8d;">
+                        Δεν βρέθηκαν διαδρομές για τα κριτήρια αναζήτησης.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <p style="font-size: 0.8em; color: #7f8c8d; margin-top: 10px;">
+            * Κέρδος Διαδρομής = Είσπραξη - Διόδια - (Credits x 0.50€)
+        </p>
+    </div>
+
+    <!-- Στατιστικά (Side by Side) -->
+    <div class="side-by-side">
+        
+        <!-- Top Hotels -->
+        <div class="table-container">
+            <h3>🏨 Top 5 Ξενοδοχεία</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ξενοδοχείο</th>
+                        <th>Διαδρομές</th>
+                        <th>Κέρδος (χωρίς έξοδα)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for h in top_hotels %}
+                    <tr>
+                        <td>{{ h['hotel_name'] }}</td>
+                        <td>{{ h['count'] }}</td>
+                        <td class="profit-positive">{{ "%.2f"|format(h['profit']) }}€</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Destination Stats -->
+        <div class="table-container">
+            <h3>📍 Στατιστικά Προορισμών</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Προορισμός</th>
+                        <th>Διαδρομές</th>
+                        <th>Σύνολο Credits</th>
+                        <th>%</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in dest_stats %}
+                    <tr>
+                        <td>{{ d['dest_name'] }}</td>
+                        <td>{{ d['count'] }}</td>
+                        <td>{{ d['total_credits'] }}</td>
+                        <td>{{ "%.1f"|format((d['count'] / ride_count * 100) if ride_count > 0 else 0) }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+{% endblock %}

@@ -1,0 +1,329 @@
+{% extends 'base.html' %}
+
+{% block title %}Taxi Tracker - Ρυθμίσεις{% endblock %}
+
+{% block styles %}
+    <!-- SortableJS Library (χρειάζεται για το Drag & Drop) -->
+    <script src="{{ url_for('static', filename='js/Sortable.min.js') }}"></script>
+
+    <style>
+        /* Flash Messages */
+        .alert {
+            padding: 15px;
+            background-color: #d4edda;
+            color: #155724;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #c3e6cb;
+        }
+
+        h2, h3 { color: var(--secondary-color); margin-bottom: 20px; }
+
+        /* Lists (Hotels / Destinations) */
+        .list-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .sortable-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            max-height: 180px; /* Δείχνει περίπου 6-7 στοιχεία */
+            overflow-y: auto;  /* Εμφανίζει scrollbar αν χρειαστεί */
+        }
+
+        .sortable-list li {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            background: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: grab;
+        }
+        .sortable-list li:last-child { border-bottom: none; }
+        .sortable-list li:hover { background-color: #f8f9fa; }
+        .sortable-list li.sortable-ghost { background-color: #e2e6ea; opacity: 0.5; }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 0.8em;
+            text-decoration: none;
+            border-radius: 4px;
+            background-color: #6c757d;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            padding: 5px;
+        }
+        .delete-btn:hover { background-color: #fee; border-radius: 50%; }
+
+        /* Rates Table */
+        .table-responsive { overflow-x: auto; }
+        
+        /* Override base table styles if needed or keep default */
+        table {
+            font-size: 0.9em;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background-color: var(--secondary-color);
+            color: white;
+            position: sticky;
+            top: 0;
+        }
+
+        th:first-child, td:first-child {
+            text-align: left;
+            background-color: #f8f9fa;
+            font-weight: bold;
+            position: sticky;
+            left: 0;
+            z-index: 1;
+        }
+
+        input[type="number"] {
+            width: 60px;
+            padding: 5px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        
+        .btn-save {
+            background-color: var(--success-color);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-size: 1.1em;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn-save:hover { background-color: #219150; }
+        
+        .add-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .add-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .add-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* Export Button */
+        .btn-export {
+            background-color: #27ae60;
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 500;
+        }
+        .btn-export:hover { background-color: #219150; }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <!-- Τίτλος -->
+    <h1>⚙️ Ρυθμίσεις</h1>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="alert">
+            <span class="material-icons" style="vertical-align: middle;">check_circle</span>
+            {{ messages[0] }}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div class="list-container">
+        
+        <!-- Hotels Management -->
+        <div class="card">
+            <div class="header-row">
+                <h2>🏨 Ξενοδοχεία</h2>
+                <div style="font-size: 0.9em;">
+                    Sort: {{ 'A-Z' if hotel_mode == 'alpha' else 'Custom' }}
+                    <a href="{{ url_for('settings.toggle_sort', item_type='hotels') }}" class="btn-small">
+                        <span class="material-icons" style="font-size: 14px;">swap_vert</span> Toggle
+                    </a>
+                </div>
+            </div>
+            
+            <form action="{{ url_for('settings.manage_hotels') }}" method="POST" class="add-form">
+                <input type="text" name="new_hotel_name" class="add-input" placeholder="Νέο Ξενοδοχείο...">
+                <button type="submit" class="add-btn"><span class="material-icons" style="font-size:16px;">add</span></button>
+            </form>
+
+            <ul id="hotels-list" class="sortable-list">
+                {% for h in hotels %}
+                <li data-id="{{ h['id'] }}">
+                    {{ h['name'] }}
+                    <form action="{{ url_for('settings.manage_hotels') }}" method="POST" style="display:inline;" data-confirm="Διαγραφή του {{ h['name'] }};" onsubmit="return confirm(this.getAttribute('data-confirm'));">
+                        <input type="hidden" name="delete_hotel_id" value="{{ h['id'] }}">
+                        <button type="submit" class="delete-btn"><span class="material-icons">delete</span></button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Destinations Management -->
+        <div class="card">
+            <div class="header-row">
+                <h2>📍 Προορισμοί</h2>
+                <div style="font-size: 0.9em;">
+                    Sort: {{ 'A-Z' if dest_mode == 'alpha' else 'Custom' }}
+                    <a href="{{ url_for('settings.toggle_sort', item_type='destinations') }}" class="btn-small">
+                        <span class="material-icons" style="font-size: 14px;">swap_vert</span> Toggle
+                    </a>
+                </div>
+            </div>
+
+            <form action="{{ url_for('settings.manage_destinations') }}" method="POST" class="add-form">
+                <input type="text" name="new_dest_name" class="add-input" placeholder="Νέος Προορισμός...">
+                <button type="submit" class="add-btn"><span class="material-icons" style="font-size:16px;">add</span></button>
+            </form>
+
+            <ul id="dests-list" class="sortable-list">
+                {% for d in destinations %}
+                <li data-id="{{ d['id'] }}">
+                    {{ d['name'] }}
+                    <form action="{{ url_for('settings.manage_destinations') }}" method="POST" style="display:inline;" data-confirm="Διαγραφή του {{ d['name'] }};" onsubmit="return confirm(this.getAttribute('data-confirm'));">
+                         <input type="hidden" name="delete_dest_id" value="{{ d['id'] }}">
+                         <button type="submit" class="delete-btn"><span class="material-icons">delete</span></button>
+                    </form>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+    </div>
+
+    <!-- Rates Matrix -->
+    <!-- ΠΡΟΣΘΗΚΗ: style="margin-top: 50px;" για να κατέβει πιο κάτω -->
+    <div class="card" style="margin-top: 50px;">
+        <div class="header-row">
+            <h2>💰 Τιμές Credits ανά Προορισμό</h2>
+            <a href="/export_rates" class="btn-export">
+                <span class="material-icons">download</span> Export Excel
+            </a>
+        </div>
+        
+        <p style="color: #666; font-size: 0.9em; margin-bottom: 15px;">
+            Ορίστε τα credits για κάθε διαδρομή. Μην ξεχάσετε να πατήσετε "Αποθήκευση".
+        </p>
+
+        <form method="POST">
+            <input type="hidden" name="save_rates" value="1">
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Hotel \ Dest</th>
+                            {% for d in destinations %}
+                            <th>{{ d['name'] }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for h in hotels %}
+                        <tr>
+                            <td>{{ h['name'] }}</td>
+                            {% for d in destinations %}
+                            <td>
+                                <input type="number" inputmode="decimal" pattern="[0-9]*"  name="rate_{{ h['id'] }}_{{ d['id'] }}" 
+                                       value="{{ rates.get((h['id'], d['id']), 0) }}">
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <button type="submit" class="btn-save">
+                <span class="material-icons">save</span> Αποθήκευση Credits
+            </button>
+        </form>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Drag & Drop Logic -->
+<script>
+    function setupSortable(listId, itemType, isEnabled) {
+        var el = document.getElementById(listId);
+        if (isEnabled) {
+            new Sortable(el, {
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                onEnd: function (evt) {
+                    var order = [];
+                    el.querySelectorAll('li').forEach(function (li) {
+                        order.push(li.getAttribute('data-id'));
+                    });
+                    fetch('/reorder/' + itemType, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({order: order})
+                    });
+                }
+            });
+            el.style.cursor = 'grab';
+        } else {
+            el.style.cursor = 'default';
+        }
+    }
+
+    // Διόρθωση Syntax Error: Περνάμε τις τιμές ως string ή boolean της JS
+    var hotelMode = "{{ hotel_mode }}";
+    var destMode = "{{ dest_mode }}";
+
+    setupSortable('hotels-list', 'hotels', hotelMode === 'custom');
+    setupSortable('dests-list', 'destinations', destMode === 'custom');
+</script>
+{% endblock %}

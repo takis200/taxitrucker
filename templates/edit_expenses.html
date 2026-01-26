@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block title %}Taxi Tracker - Επεξεργασία Έξοδα{% endblock %}
+
+{% block styles %}
+<style>
+    /* Περιορισμός πλάτους της κάρτας και κεντράρισμα */
+    .form-card {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    /* Κουμπί Πίσω */
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        text-decoration: none;
+        color: var(--secondary-color);
+        font-weight: 500;
+        font-size: 16px;
+        margin-bottom: 10px; /* Απόσταση από τον τίτλο */
+        transition: color 0.2s;
+    }
+    .back-link:hover {
+        color: var(--primary-color);
+    }
+    .back-arrow {
+        font-size: 20px;
+        line-height: 1;
+    }
+
+    /* Στυλ επικεφαλίδας */
+    .form-title {
+        text-align: center;
+        margin-top: 0;
+        margin-bottom: 25px;
+        color: var(--primary-color);
+        /* Αν θέλεις να ανέβει λίγο πιο ψηλά αφού μπήκε το κουμπί πίσω, αφαίρεσε το σχόλιο: */
+        /* margin-top: -10px; */
+    }
+
+    /* Στυλ Inputs */
+    label {
+        font-weight: bold;
+        display: block;
+        margin: 15px 0 8px;
+        font-size: 1.1rem;
+        color: var(--text-color);
+    }
+
+    input[type="number"] {
+        width: 100%;
+        padding: 14px;
+        border: 2px solid #ddd;
+        border-radius: var(--border-radius);
+        font-size: 1.2rem;
+        box-sizing: border-box;
+        transition: border-color 0.3s;
+    }
+
+    input[type="number"]:focus {
+        border-color: var(--accent-color);
+        outline: none;
+    }
+
+    /* Layout κουμπιών */
+    .btn-row {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    .btn {
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        font-size: 1.1em;
+        cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s;
+    }
+
+    .btn-save {
+        background-color: var(--danger-color);
+        color: white;
+    }
+    .btn-save:hover {
+        background-color: #c0392b;
+    }
+
+    .btn-cancel {
+        background-color: #95a5a6;
+        color: white;
+    }
+    .btn-cancel:hover {
+        background-color: #7f8c8d;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 600px) {
+        .btn-row { gap: 10px; }
+        .btn { font-size: 1rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <!-- Κάρτα Φόρμας -->
+    <div class="card form-card">
+        
+        <!-- Κουμπί Πίσω (Μέσα στην κάρτα πλέον) -->
+        <a href="{{ url_for('history.history') }}" class="back-link">
+            <span class="back-arrow">&#8592;</span> Πίσω
+        </a>
+
+        <h2 class="form-title">⛽ Έξοδα: {{ date }}</h2>
+
+        <form method="POST">
+            <label>Καύσιμα (€)</label>
+            <input type="number" step="0.01" name="fuel" value="{{ expenses.fuel if expenses else 0 }}" placeholder="0.00">
+
+            <label>Διάφορα (€)</label>
+            <input type="number" step="0.01" name="misc" value="{{ expenses.misc if expenses else 0 }}" placeholder="0.00">
+
+            <div class="btn-row">
+                <button type="submit" class="btn btn-save">💾 Αποθήκευση</button>
+                <a class="btn btn-cancel" href="{{ url_for('history.history') }}">Ακύρωση</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+ 

@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Taxi Tracker - {{ 'Επεξεργασία' if service else 'Νέο' }} Service{% endblock %}
+
+{% block styles %}
+<style>
+    .service-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 25px;
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #2c3e50; }
+    
+    /* Input Styling */
+    .form-control, select, textarea, input[type="text"], input[type="number"], input[type="date"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 16px;
+        box-sizing: border-box; /* Σημαντικό για να μην ξεχειλίζει */
+    }
+    
+    .form-control:focus { border-color: #3498db; outline: none; box-shadow: 0 0 0 3px rgba(52,152,219,0.2); }
+
+    /* Table Styling */
+    .lines-table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 10px; }
+    .lines-table th { text-align: left; padding: 12px; background: #f8f9fa; border-bottom: 2px solid #dee2e6; color: #495057; font-weight: 600; }
+    .lines-table td { padding: 8px; border-bottom: 1px solid #eee; vertical-align: middle; }
+    
+    /* Buttons */
+    .btn-save { background: #27ae60; color: white; padding: 12px 25px; border: none; cursor: pointer; font-size: 16px; border-radius: 6px; font-weight: bold; transition: background 0.2s; }
+    .btn-save:hover { background: #219150; }
+    
+    .btn-danger { background: #e74c3c; color: white; padding: 10px 15px; text-decoration: none; border-radius: 6px; font-weight: 500; display: inline-block; transition: background 0.2s; }
+    .btn-danger:hover { background: #c0392b; }
+    
+    .btn-add { background: #3498db; color: white; border: none; padding: 8px 15px; cursor: pointer; border-radius: 6px; font-weight: 500; margin-top: 15px; display: inline-flex; align-items: center; gap: 5px; }
+    .btn-add:hover { background: #2980b9; }
+
+    .btn-cancel { color: #7f8c8d; text-decoration: none; font-weight: 500; padding: 10px 15px; }
+    .btn-cancel:hover { color: #34495e; }
+
+    /* Delete Row Button */
+    .btn-del-row { background: none; border: none; cursor: pointer; color: #e74c3c; font-size: 1.2em; padding: 5px; border-radius: 4px; }
+    .btn-del-row:hover { background-color: #ffeaea; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="service-container">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h1 style="margin:0;">{{ '✏️ Επεξεργασία' if service else '➕ Νέο' }} Service</h1>
+        <a href="{{ url_for('services.services_list') }}" class="btn-cancel">🔙 Επιστροφή</a>
+    </div>
+    
+    <form method="POST">
+        <!-- Header Fields -->
+        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+            <div class="form-group" style="flex:1; min-width: 200px;">
+                <label>📅 Ημερομηνία</label>
+                <input type="date" name="service_date" required value="{{ service.service_date if service else '' }}">
+            </div>
+            <div class="form-group" style="flex:1; min-width: 200px;">
+                <label>🚗 Χιλιόμετρα (Odometer)</label>
+                <input type="number" name="odometer_km" required value="{{ service.odometer_km if service else '' }}">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>🏢 Συνεργείο</label>
+            <!-- Αλλαγή σε Select για επιλογή από τη λίστα -->
+            <select name="workshop_name" class="form-control" required>
+                <option value="" disabled selected>Επιλέξτε συνεργείο...</option>
+                {% for w in workshops %}
+                    <option value="{{ w.name }}" {% if service and service.workshop_name == w.name %}selected{% endif %}>
+                        {{ w.name }}
+                    </option>
+                {% endfor %}
+                <option value="custom">Άλλο (γράψτε στις σημειώσεις)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>📝 Σημείωση (π.χ. Εγγύηση, επόμενο service)</label>
+            <textarea name="note" rows="3" class="form-control">{{ service.note if service else '' }}</textarea>
+        </div>
+
+        <!-- Parts Lines -->
+        <h3 style="margin-top: 30px; border-bottom: 2px solid #eee; padding-bottom: 10px;">⚙️ Ανταλλακτικά & Εργασίες</h3>
+        <div class="table-responsive">
+            <table class="lines-table" id="partsTable">
+                <thead>
+                    <tr>
+                        <th width="15%">Κωδικός</th>
+                        <th width="40%">Περιγραφή</th>
+                        <th width="10%">Ποσ.</th>
+                        <th width="15%">Τιμή (€)</th>
+                        <th width="10%"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for line in lines %}
+                    <tr>
+                        <!-- Προσθήκη list="parts_codes" για autocomplete -->
+                        <td><input type="text" name="part_code[]" value="{{ line.part_code }}" list="parts_codes" placeholder="Κωδ."></td>
+                        <!-- Προσθήκη list="parts_descriptions" για autocomplete -->
+                        <td><input type="text" name="part_description[]" value="{{ line.part_description }}" list="parts_descriptions" required placeholder="Περιγραφή..."></td>
+                        <td><input type="number" step="0.01" name="qty[]" value="{{ line.qty }}" required style="text-align: center;"></td>
+                        <td><input type="number" step="0.01" name="unit_price[]" value="{{ line.unit_price }}" required></td>
+                        <td style="text-align: center;"><button type="button" onclick="removeRow(this)" class="btn-del-row" title="Αφαίρεση γραμμής">🗑️</button></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <button type="button" class="btn-add" onclick="addRow()">
+            <span>+</span> Προσθήκη Γραμμής
+        </button>
+
+        <div class="form-group" style="margin-top: 25px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
+            <label>🔧 Κόστος Εργασίας (Εργατικά €)</label>
+            <input type="number" step="0.01" name="labor_cost" value="{{ service.labor_cost if service else 0 }}" style="font-weight: bold; color: #2c3e50;">
+        </div>
+
+        <div style="margin-top: 30px; display: flex; justify-content: space-between; align-items: center; padding-top: 20px; border-top: 1px solid #eee;">
+            {% if service %}
+                <a href="{{ url_for('services.service_delete', id=service.id) }}" class="btn-danger" onclick="return confirm('Είστε σίγουροι ότι θέλετε να διαγράψετε οριστικά αυτό το service;')">🗑️ Διαγραφή</a>
+            {% else %}
+                <a href="{{ url_for('services.services_list') }}" class="btn-cancel">Ακύρωση</a>
+            {% endif %}
+            
+            <button type="submit" class="btn-save">💾 Αποθήκευση</button>
+        </div>
+    </form>
+</div>
+
+<!-- DATA LISTS ΓΙΑ AUTOCOMPLETE -->
+<!-- Αυτά γεμίζουν αυτόματα από τη βάση δεδομένων -->
+<datalist id="parts_codes">
+    {% for p in parts_list %}
+        <option value="{{ p.code }}">{{ p.description }}</option>
+    {% endfor %}
+</datalist>
+
+<datalist id="parts_descriptions">
+    {% for p in parts_list %}
+        <option value="{{ p.description }}">Κωδ: {{ p.code }}</option>
+    {% endfor %}
+</datalist>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function addRow() {
+        const table = document.getElementById('partsTable').getElementsByTagName('tbody')[0];
+        const newRow = table.insertRow();
+        
+        // ΣΗΜΑΝΤΙΚΟ: Προσθέσαμε τα attributes list="..." και στα νέα πεδία που δημιουργούνται με JS
+        newRow.innerHTML = `
+            <td><input type="text" name="part_code[]" list="parts_codes" placeholder="Κωδ."></td>
+            <td><input type="text" name="part_description[]" list="parts_descriptions" required placeholder="Περιγραφή..."></td>
+            <td><input type="number" step="0.01" name="qty[]" value="1" required style="text-align: center;"></td>
+            <td><input type="number" step="0.01" name="unit_price[]" value="0" required></td>
+            <td style="text-align: center;"><button type="button" onclick="removeRow(this)" class="btn-del-row">🗑️</button></td>
+        `;
+    }
+
+    function removeRow(btn) {
+        const row = btn.parentNode.parentNode;
+        row.parentNode.removeChild(row);
+    }
+    
+    // Έλεγχος αν είναι νέο service για να προσθέσουμε μια κενή γραμμή στην αρχή
+    const isNewService = "{{ 'true' if not service else 'false' }}" === "true";
+
+    if (isNewService) {
+        document.addEventListener("DOMContentLoaded", function() {
+            const tbody = document.getElementById('partsTable').getElementsByTagName('tbody')[0];
+            if(tbody.rows.length === 0) {
+                addRow();
+            }
+        });
+    }
+</script>
+{% endblock %}
