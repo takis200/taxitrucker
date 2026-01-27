@@ -106,20 +106,36 @@ def workshops_list():
     workshops = services_repo.get_all_workshops()
     return render_template('workshops.html', workshops=workshops)
 
+@services_bp.route('/workshop-types', methods=['GET', 'POST'])
+def workshop_types_manage():
+    if request.method == 'POST':
+        new_type = request.form.get('name')
+        if new_type:
+            services_repo.create_workshop_type(new_type)
+        return redirect(url_for('services.workshop_types_manage'))
+    
+    types = services_repo.get_all_workshop_types()
+    return render_template('workshop_types.html', types=types)
+
 @services_bp.route('/workshops/add', methods=['GET', 'POST'])
 def workshop_add():
     if request.method == 'POST':
         services_repo.create_workshop(request.form)
         return redirect(url_for('services.workshops_list'))
-    return render_template('workshop_form.html', workshop=None)
+    
+    # Φέρνουμε τα είδη για να τα βάλουμε στο Select
+    types = services_repo.get_all_workshop_types()
+    return render_template('workshop_form.html', workshop=None, types=types)
 
 @services_bp.route('/workshops/edit/<int:id>', methods=['GET', 'POST'])
 def workshop_edit(id):
     if request.method == 'POST':
         services_repo.update_workshop(id, request.form)
         return redirect(url_for('services.workshops_list'))
+    
     workshop = services_repo.get_workshop_by_id(id)
-    return render_template('workshop_form.html', workshop=workshop)
+    types = services_repo.get_all_workshop_types() # <--- ΤΟ ΣΤΕΛΝΟΥΜΕ ΚΙ ΕΔΩ
+    return render_template('workshop_form.html', workshop=workshop, types=types)
 
 @services_bp.route('/workshops/delete/<int:id>')
 def workshop_delete(id):
@@ -151,3 +167,15 @@ def part_registry_edit(id):
 def part_registry_delete(id):
     services_repo.delete_part_registry(id)
     return redirect(url_for('services.parts_registry_list'))
+
+@services_bp.route('/workshop-types/edit/<int:id>', methods=['POST'])
+def workshop_type_edit(id):
+    new_name = request.form.get('name')
+    if new_name:
+        services_repo.update_workshop_type(id, new_name)
+    return redirect(url_for('services.workshop_types_manage'))
+
+@services_bp.route('/workshop-types/delete/<int:id>')
+def workshop_type_delete(id):
+    services_repo.delete_workshop_type(id)
+    return redirect(url_for('services.workshop_types_manage'))

@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Taxi Tracker - Είδη Συνεργείων{% endblock %}
+
+{% block styles %}
+<style>
+    .types-container {
+        max-width: 700px;
+        margin: 20px auto;
+        padding: 25px;
+        background-color: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .form-inline {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 25px;
+        padding: 20px;
+        background: #eef2f7;
+        border-radius: 8px;
+    }
+
+    .form-control {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 16px;
+    }
+
+    /* Χρησιμοποιούμε την ίδια λογική με το services.html */
+    .btn-action {
+        padding: 10px 15px;
+        border-radius: 6px;
+        text-decoration: none;
+        color: white;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        display: inline-block;
+    }
+
+    .btn-add { background-color: #3498db; }
+    .btn-back { background-color: #7f8c8d; }
+    
+    /* Τα εικονίδια ενεργειών (ίδιο στυλ με το services.html) */
+    .action-icon {
+        text-decoration: none;
+        font-size: 1.2em;
+        margin-left: 10px;
+        cursor: pointer;
+        background: none;
+        border: none;
+    }
+
+    /* Λίστα */
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    td { padding: 15px; border-bottom: 1px solid #eee; }
+    tr:last-child td { border-bottom: none; }
+</style>
+
+<script>
+    function toggleEdit(id) {
+        var displayRow = document.getElementById('display-' + id);
+        var editRow = document.getElementById('edit-' + id);
+        
+        if (displayRow.style.display === 'none') {
+            displayRow.style.display = '';
+            editRow.style.display = 'none';
+        } else {
+            displayRow.style.display = 'none';
+            editRow.style.display = '';
+            editRow.querySelector('input').focus();
+        }
+    }
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="types-container">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2>⚙️ Είδη Συνεργείων</h2>
+        <a href="{{ url_for('services.workshops_list') }}" class="btn-action btn-back">🔙 Πίσω</a>
+    </div>
+
+    <!-- Φόρμα Προσθήκης -->
+    <form method="POST" class="form-inline">
+        <input type="text" name="name" class="form-control" placeholder="Νέο είδος..." required>
+        <button type="submit" class="btn-action btn-add">➕ Προσθήκη</button>
+    </form>
+
+    <!-- Λίστα σε μορφή Πίνακα (για να μοιάζει με το Services) -->
+    <table>
+        {% for t in types %}
+        
+        <!-- Γραμμή Εμφάνισης -->
+        <tr id="display-{{ t.id }}">
+            <td style="font-weight: 600; color: #2c3e50;">{{ t.name }}</td>
+            <td style="text-align: right;">
+                <!-- Κουμπί Edit -->
+                <button onclick="toggleEdit({{ t.id }})" class="action-icon" title="Επεξεργασία">✏️</button>
+                <!-- Κουμπί Delete -->
+                <a href="{{ url_for('services.workshop_type_delete', id=t.id) }}" 
+                   class="action-icon" 
+                   onclick="return confirm('Διαγραφή;')" 
+                   title="Διαγραφή">🗑️</a>
+            </td>
+        </tr>
+
+        <!-- Γραμμή Επεξεργασίας (Κρυφή) -->
+        <tr id="edit-{{ t.id }}" style="display: none; background-color: #f9f9f9;">
+            <td colspan="2">
+                <form action="{{ url_for('services.workshop_type_edit', id=t.id) }}" method="POST" style="display: flex; gap: 10px;">
+                    <input type="text" name="name" value="{{ t.name }}" class="form-control" required>
+                    <button type="submit" class="action-icon" title="Αποθήκευση">💾</button>
+                    <button type="button" onclick="toggleEdit({{ t.id }})" class="action-icon" title="Ακύρωση">❌</button>
+                </form>
+            </td>
+        </tr>
+
+        {% else %}
+        <tr><td style="text-align:center; color:gray; padding:20px;">Δεν υπάρχουν είδη.</td></tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

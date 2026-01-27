@@ -25,7 +25,7 @@
         box-sizing: border-box;
     }
     
-    .form-control:focus { border-color: #3498db; outline: none; box-shadow: 0 0 0 3px rgba(52,152,219,0.2); }
+    .form-control:focus, select:focus { border-color: #3498db; outline: none; box-shadow: 0 0 0 3px rgba(52,152,219,0.2); }
 
     /* Buttons */
     .btn-save { background: #27ae60; color: white; padding: 12px 25px; border: none; cursor: pointer; font-size: 16px; border-radius: 6px; font-weight: bold; transition: background 0.2s; }
@@ -36,13 +36,17 @@
 
     .btn-cancel { color: #7f8c8d; text-decoration: none; font-weight: 500; padding: 10px 15px; }
     .btn-cancel:hover { color: #34495e; }
+    
+    /* Link για προσθήκη νέου είδους */
+    .add-type-link { font-size: 0.9em; color: #3498db; text-decoration: none; float: right; font-weight: normal;}
+    .add-type-link:hover { text-decoration: underline; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="service-container">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h1 style="margin:0;">{{ '🏢 Επεξεργασία' if workshop else '➕ Νέο' }} Συνεργείο</h1>
+        <h1 style="margin:0;">{{ '🏢 Επεξεργασία' if workshop else '🏢 Νέο' }} Συνεργείο</h1>
         <a href="{{ url_for('services.workshops_list') }}" class="btn-cancel">🔙 Επιστροφή</a>
     </div>
     
@@ -50,6 +54,24 @@
         <div class="form-group">
             <label>Όνομα</label>
             <input type="text" name="name" class="form-control" value="{{ workshop.name if workshop else '' }}" required>
+        </div>
+
+        <!-- ΝΕΟ ΠΕΔΙΟ: Είδος Συνεργείου -->
+        <div class="form-group">
+            <label>
+                Είδος Συνεργείου
+                <!-- Προαιρετικά: Link για να πας να φτιάξεις νέο είδος αν δεν υπάρχει -->
+                <a href="{{ url_for('services.workshop_types_manage') }}" target="_blank" class="add-type-link">+ Νέο Είδος</a>
+            </label>
+            <select name="type_id" class="form-control">
+                <option value="">-- Επιλέξτε Είδος --</option>
+                {% for t in types %}
+                <option value="{{ t.id }}" 
+                    {% if workshop and workshop.type_id == t.id %}selected{% endif %}>
+                    {{ t.name }}
+                </option>
+                {% endfor %}
+            </select>
         </div>
 
         <div class="form-group">

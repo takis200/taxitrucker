@@ -97,12 +97,19 @@ CREATE TABLE IF NOT EXISTS "spare_parts" (
 	"notes"	TEXT,
 	PRIMARY KEY("id" AUTOINCREMENT)
 );
+CREATE TABLE IF NOT EXISTS "workshop_types" (
+	"id"	INTEGER,
+	"name"	TEXT NOT NULL UNIQUE,
+	PRIMARY KEY("id" AUTOINCREMENT)
+);
 CREATE TABLE IF NOT EXISTS "workshops" (
 	"id"	INTEGER,
 	"name"	TEXT NOT NULL UNIQUE,
 	"phone"	TEXT,
 	"address"	TEXT,
-	PRIMARY KEY("id" AUTOINCREMENT)
+	"type_id"	INTEGER,
+	PRIMARY KEY("id" AUTOINCREMENT),
+	FOREIGN KEY("type_id") REFERENCES "workshop_types"("id")
 );
 CREATE INDEX IF NOT EXISTS "idx_lines_description" ON "service_lines" (
 	"part_description"
