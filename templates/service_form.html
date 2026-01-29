@@ -22,7 +22,7 @@
         border: 1px solid #ced4da;
         border-radius: 6px;
         font-size: 16px;
-        box-sizing: border-box; /* Σημαντικό για να μην ξεχειλίζει */
+        box-sizing: border-box;
     }
     
     .form-control:focus { border-color: #3498db; outline: none; box-shadow: 0 0 0 3px rgba(52,152,219,0.2); }
@@ -73,7 +73,6 @@
 
         <div class="form-group">
             <label>🏢 Συνεργείο</label>
-            <!-- Αλλαγή σε Select για επιλογή από τη λίστα -->
             <select name="workshop_name" class="form-control" required>
                 <option value="" disabled selected>Επιλέξτε συνεργείο...</option>
                 {% for w in workshops %}
@@ -106,11 +105,10 @@
                 <tbody>
                     {% for line in lines %}
                     <tr>
-                        <!-- Προσθήκη list="parts_codes" για autocomplete -->
                         <td><input type="text" name="part_code[]" value="{{ line.part_code }}" list="parts_codes" placeholder="Κωδ."></td>
-                        <!-- Προσθήκη list="parts_descriptions" για autocomplete -->
                         <td><input type="text" name="part_description[]" value="{{ line.part_description }}" list="parts_descriptions" required placeholder="Περιγραφή..."></td>
-                        <td><input type="number" step="0.01" name="qty[]" value="{{ line.qty }}" required style="text-align: center;"></td>
+                        <!-- ΔΙΟΡΘΩΣΗ: Ποσότητα μόνο ακέραιος (int) -->
+                        <td><input type="number" step="1" min="1" name="qty[]" value="{{ line.qty|int }}" required style="text-align: center;"></td>
                         <td><input type="number" step="0.01" name="unit_price[]" value="{{ line.unit_price }}" required></td>
                         <td style="text-align: center;"><button type="button" onclick="removeRow(this)" class="btn-del-row" title="Αφαίρεση γραμμής">🗑️</button></td>
                     </tr>
@@ -141,7 +139,6 @@
 </div>
 
 <!-- DATA LISTS ΓΙΑ AUTOCOMPLETE -->
-<!-- Αυτά γεμίζουν αυτόματα από τη βάση δεδομένων -->
 <datalist id="parts_codes">
     {% for p in parts_list %}
         <option value="{{ p.code }}">{{ p.description }}</option>
@@ -158,18 +155,59 @@
 
 {% block scripts %}
 <script>
+    // 1. Δημιουργία πίνακα δεδομένων για αναζήτηση στη JavaScript
+    const partsData = [
+        {% for p in parts_list %}
+            { code: "{{ p.code }}", description: "{{ p.description }}" },
+        {% endfor %}
+    ];
+
+    // Συνάρτηση που βρίσκει και συμπληρώνει τα πεδία
+    function updateRowFields(inputElement, type) {
+        const row = inputElement.closest('tr');
+        const val = inputElement.value;
+        let foundPart = null;
+
+        if (type === 'code') {
+            // Αναζήτηση με βάση τον κωδικό
+            foundPart = partsData.find(p => p.code === val);
+            if (foundPart) {
+                row.querySelector('input[name="part_description[]"]').value = foundPart.description;
+            }
+        } else if (type === 'desc') {
+            // Αναζήτηση με βάση την περιγραφή
+            foundPart = partsData.find(p => p.description === val);
+            if (foundPart) {
+                row.querySelector('input[name="part_code[]"]').value = foundPart.code;
+            }
+        }
+    }
+
+    // Συνάρτηση που ενεργοποιεί τους listeners σε μια γραμμή
+    function attachEventListeners(row) {
+        const codeInput = row.querySelector('input[name="part_code[]"]');
+        const descInput = row.querySelector('input[name="part_description[]"]');
+
+        codeInput.addEventListener('input', function() { updateRowFields(this, 'code'); });
+        descInput.addEventListener('input', function() { updateRowFields(this, 'desc'); });
+    }
+
+    // Προσθήκη νέας γραμμής
     function addRow() {
         const table = document.getElementById('partsTable').getElementsByTagName('tbody')[0];
         const newRow = table.insertRow();
         
-        // ΣΗΜΑΝΤΙΚΟ: Προσθέσαμε τα attributes list="..." και στα νέα πεδία που δημιουργούνται με JS
+        // ΔΙΟΡΘΩΣΗ: Προστέθηκε το step="1" και min="1" στο qty
         newRow.innerHTML = `
             <td><input type="text" name="part_code[]" list="parts_codes" placeholder="Κωδ."></td>
             <td><input type="text" name="part_description[]" list="parts_descriptions" required placeholder="Περιγραφή..."></td>
-            <td><input type="number" step="0.01" name="qty[]" value="1" required style="text-align: center;"></td>
+            <td><input type="number" step="1" min="1" name="qty[]" value="1" required style="text-align: center;"></td>
             <td><input type="number" step="0.01" name="unit_price[]" value="0" required></td>
             <td style="text-align: center;"><button type="button" onclick="removeRow(this)" class="btn-del-row">🗑️</button></td>
         `;
+        
+        // Σύνδεση autocomplete στη νέα γραμμή
+        attachEventListeners(newRow);
     }
 
     function removeRow(btn) {
@@ -177,16 +215,21 @@
         row.parentNode.removeChild(row);
     }
     
-    // Έλεγχος αν είναι νέο service για να προσθέσουμε μια κενή γραμμή στην αρχή
-    const isNewService = "{{ 'true' if not service else 'false' }}" === "true";
-
-    if (isNewService) {
-        document.addEventListener("DOMContentLoaded", function() {
-            const tbody = document.getElementById('partsTable').getElementsByTagName('tbody')[0];
-            if(tbody.rows.length === 0) {
-                addRow();
-            }
+    // Αρχικοποίηση
+    document.addEventListener("DOMContentLoaded", function() {
+        // Σύνδεση autocomplete σε υπάρχουσες γραμμές (Edit mode)
+        const existingRows = document.querySelectorAll('#partsTable tbody tr');
+        existingRows.forEach(row => {
+            attachEventListeners(row);
         });
-    }
+
+        // Αν είναι νέο service, πρόσθεσε μια κενή γραμμή
+        const isNewService = "{{ 'true' if not service else 'false' }}" === "true";
+        const tbody = document.getElementById('partsTable').getElementsByTagName('tbody')[0];
+        
+        if (isNewService && tbody.rows.length === 0) {
+            addRow();
+        }
+    });
 </script>
 {% endblock %}

@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, Response
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import datetime, date, timedelta
 import io
 import csv
 import logging
@@ -44,6 +44,8 @@ from routes.exportrates import exportrates_bp  # 1. Εισαγωγή
 app.register_blueprint(exportrates_bp)      # 2. Εγγραφή
 from routes.history import history_bp  # 1. Εισαγωγή
 app.register_blueprint(history_bp)      # 2. Εγγραφή
+from routes.airport import airport_bp  # 1. Εισαγωγή
+app.register_blueprint(airport_bp)      # 2. Εγγραφή
 # ----------------------------------
 
 def get_db_connection():
@@ -63,17 +65,22 @@ def set_setting(key, value):
     conn.commit()
     conn.close()
 
-# Φίλτρο για αλλαγή ημερομηνίας σε Μέρα-Μήνας-Έτος
 @app.template_filter('format_date')
 def format_date_filter(value):
-    if not value:
+    if value is None:
         return ""
+    
+    # Αν είναι ήδη αντικείμενο ημερομηνίας, απλά μορφοποίησέ το
+    if isinstance(value, (datetime, date)):
+        return value.strftime('%d-%m-%Y')
+    
+    # Αν είναι string, προσπάθησε να το μετατρέψεις
     try:
-        # Μετατροπή από YYYY-MM-DD σε DD-MM-YYYY
+        # Δοκιμή για string μορφής YYYY-MM-DD
         date_obj = datetime.strptime(str(value), '%Y-%m-%d')
         return date_obj.strftime('%d-%m-%Y')
     except ValueError:
-        return value  # Αν δεν είναι ημερομηνία, το αφήνουμε όπως είναι
+        return value  # Επέστρεψε το αρχικό αν αποτύχει η μετατροπή
 
 # --- ΤΕΣΤ ΣΥΝΔΕΣΗΣ ΒΑΣΗΣ ΔΕΔΟΜΕΝΩΝ ---
 @app.route('/test')

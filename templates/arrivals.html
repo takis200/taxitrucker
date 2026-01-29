@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Αφίξεις - ATH | Taxi Tracker</title>
+    <style>
+        /* Dark Theme - Airport Style */
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: 'Roboto Mono', 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .header-container {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #ffb300;
+            padding-bottom: 15px;
+        }
+
+        h1 {
+            color: #ffb300;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .refresh-note {
+            font-size: 0.8em;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #1e1e1e;
+            min-width: 800px;
+        }
+
+        thead {
+            background-color: #333;
+        }
+
+        th {
+            color: #ffb300;
+            padding: 15px;
+            text-align: left;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #333;
+            font-size: 1.1rem;
+            vertical-align: middle;
+        }
+
+        tr:hover {
+            background-color: #2c2c2c;
+        }
+
+        /* Στήλη Ώρας (Διπλή ένδειξη) */
+        .time-cell {
+            min-width: 80px;
+        }
+        .time-sched {
+            font-weight: bold;
+            color: #4CAF50; /* Πράσινο default */
+        }
+        .time-old {
+            text-decoration: none;
+            color: #aaa;
+            font-size: 0.8em;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .time-new {
+            color: #ff5252; /* Κόκκινο για αλλαγή */
+            font-weight: bold;
+        }
+
+        /* Αεροπορική με Λογότυπο */
+        .airline-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .airline-logo {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+            background-color: white;
+            border-radius: 4px;
+            padding: 2px;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.85em;
+            text-transform: uppercase;
+        }
+        .status-landed { background-color: #1b5e20; color: #a5d6a7; }
+        .status-active { background-color: #0d47a1; color: #90caf9; }
+        .status-delayed { background-color: #b71c1c; color: #ffcdd2; }
+        .status-scheduled { background-color: #424242; color: #bdbdbd; }
+
+        .flight-num { color: #ffb300; font-weight: bold; }
+        
+        .aircraft-type {
+            color: #999;
+            font-size: 0.9em;
+            font-style: italic;
+        }
+
+        .error-msg {
+            color: #ff5252;
+            text-align: center;
+            padding: 20px;
+            background: #2a1a1a;
+            border: 1px solid #ff5252;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-container">
+        <h1>ΑΦΙΞΕΙΣ - ATHENS INT.</h1>
+        <div class="refresh-note">Πατήστε F5 για ανανέωση</div>
+    </div>
+
+    {% if error %}
+        <div class="error-msg">⚠️ {{ error }}</div>
+    {% else %}
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ΩΡΑ</th>
+                        <th>ΠΤΗΣΗ</th>
+                        <th>ΑΕΡΟΠΟΡΙΚΗ</th>
+                  <!--  <th>ΑΕΡΟΣΚΑΦΟΣ</th>  -->
+                        <th>ΑΠΟ</th>
+                        <th>ΚΑΤΑΣΤΑΣΗ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for flight in flights %}
+                    <tr>
+                        <!-- 1. ΩΡΑ: Έλεγχος για καθυστέρηση -->
+                        <td class="time-cell">
+                            {% if flight.is_delayed %}
+                                <!-- Αν έχει αλλάξει η ώρα -->
+                                <span class="time-old">{{ flight.sched_time }}</span>
+                                <span class="time-new">{{ flight.est_time }}</span>
+                            {% else %}
+                                <!-- Αν είναι στην ώρα του -->
+                                <span class="time-sched">{{ flight.sched_time }}</span>
+                            {% endif %}
+                        </td>
+                        
+                        <!-- 2. ΠΤΗΣΗ -->
+                        <td class="flight-num">{{ flight.flight_iata }}</td>
+                        
+                        <!-- 3. ΑΕΡΟΠΟΡΙΚΗ (Λογότυπο + Όνομα) -->
+                        <td>
+                            <div class="airline-cell">
+                                <img src="https://pics.avs.io/200/200/{{ flight.airline_code }}.png" 
+                                     alt="" 
+                                     onerror="this.style.display='none'"
+                                     class="airline-logo">
+                                <span>{{ flight.airline_iata }}</span>
+                            </div>
+                        </td>
+
+                        <!-- 4. ΑΕΡΟΣΚΑΦΟΣ
+                        <td class="aircraft-type">
+                            {{ flight.aircraft if flight.aircraft else '-' }}
+                        </td>
+                        -->
+                        
+                        <!-- 5. ΠΡΟΟΡΙΣΜΟΣ -->
+                        <td>{{ flight.dep_iata }}</td>
+                        
+                        <!-- 6. ΚΑΤΑΣΤΑΣΗ -->
+                        <td>
+                            {% set s = flight.status|lower %}
+                            <span class="status-badge 
+                                {% if s == 'landed' %}status-landed
+                                {% elif s == 'active' %}status-active
+                                {% elif 'delay' in s %}status-delayed
+                                {% else %}status-scheduled{% endif %}">
+                                {{ flight.status }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 30px;">
+                            Δεν βρέθηκαν πτήσεις αυτή τη στιγμή.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
+</body>
+</html>

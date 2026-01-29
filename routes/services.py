@@ -1,6 +1,6 @@
 # --- 19. Διαχείριση Services ---
 from flask import Blueprint, render_template, request, redirect, url_for
-from datetime import datetime
+from datetime import datetime, date, timedelta
 # Υποθέτουμε ότι μετακινήσατε αυτές τις συναρτήσεις στο utils.py
 from utils import get_db_connection, get_setting, log_action 
 import sys
@@ -21,12 +21,20 @@ def services_list():
     return render_template('services.html', services=services, parts=parts)
 
 @services_bp.route('/services/add', methods=['GET', 'POST'])
-@services_bp.route('/services/add', methods=['GET', 'POST'])
 def service_add():
     if request.method == 'POST':
         # --- ΚΩΔΙΚΑΣ ΑΠΟΘΗΚΕΥΣΗΣ (POST) ---
+                # --- ΠΡΟΣΘΗΚΗ: Μετατροπή ημερομηνίας ---
+        raw_date = request.form['service_date']
+        try:
+            # Μετατρέπουμε το "27-01-2026" σε αντικείμενο ημερομηνίας
+            formatted_date = datetime.strptime(raw_date, '%d-%m-%Y').date()
+        except ValueError:
+            # Αν κάτι πάει στραβά, βάζουμε τη σημερινή ή κρατάμε το string (ανάλογα τη λογική σας)
+            formatted_date = datetime.now().date()
+        # ----------------------------------------
         data = {
-            'date': request.form['service_date'],
+            'date': formatted_date,
             'km': request.form['odometer_km'],
             'workshop': request.form['workshop_name'],
             'labor': float(request.form['labor_cost'] or 0),
@@ -62,6 +70,14 @@ def service_add():
 def service_edit(id):
     if request.method == 'POST':
         # Ίδια λογική με το Add, αλλά καλεί update
+        # --- ΠΡΟΣΘΗΚΗ: Μετατροπή ημερομηνίας και εδώ ---
+        raw_date = request.form['service_date']
+        try:
+            formatted_date = datetime.strptime(raw_date, '%d-%m-%Y').date()
+        except ValueError:
+            formatted_date = datetime.now().date()
+        # ----------------------------------------
+
         data = {
             'date': request.form['service_date'],
             'km': request.form['odometer_km'],
