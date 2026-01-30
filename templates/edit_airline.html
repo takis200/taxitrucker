@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}Taxi Tracker - Επεξεργασία Αεροπορικής{% endblock %}
+
+{% block styles %}
+<style>
+    /* Form Styles */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: var(--secondary-color);
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        box-sizing: border-box;
+        font-size: 1em;
+        transition: border-color 0.3s;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--accent-color);
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 15px;
+        margin-top: 25px;
+    }
+
+    .btn-save {
+        flex: 1;
+        padding: 12px;
+        background-color: var(--success-color);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1em;
+        cursor: pointer;
+        font-weight: bold;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-save:hover {
+        background-color: #219150;
+    }
+
+    .btn-cancel {
+        flex: 1;
+        padding: 12px;
+        background-color: #95a5a6;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1em;
+        cursor: pointer;
+        font-weight: bold;
+        text-decoration: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-cancel:hover {
+        background-color: #7f8c8d;
+    }
+
+    /* Flash Messages */
+    .flash-message {
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+    }
+
+    .flash-error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+
+    .flash-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+
+    /* Info Box */
+    .info-box {
+        margin-top: 20px;
+        background-color: #e8f5e9;
+        padding: 15px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+    }
+
+    .info-box p {
+        margin: 0;
+        color: #2e7d32;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <!-- Τίτλος -->
+    <h1>
+        <span class="material-icons" style="color: #3498db; font-size: 36px; vertical-align: middle;">edit</span> 
+        Επεξεργασία Αεροπορικής Εταιρείας
+    </h1>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message {% if category == 'error' %}flash-error{% else %}flash-success{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Φόρμα Επεξεργασίας -->
+    <div class="card">
+        <h3>✏️ Επεξεργασία Στοιχείων</h3>
+        <form method="POST">
+            <div class="form-group">
+                <label>Όνομα Εταιρείας *</label>
+                <input type="text" name="name" class="form-control" 
+                       value="{{ airline['name'] }}" 
+                       placeholder="π.χ. Aegean Airlines" 
+                       required>
+            </div>
+
+            <div class="form-group">
+                <label>Είσοδος (Πόρτα)</label>
+                <select name="entrance" class="form-control">
+                    <option value="" {% if not airline['entrance'] %}selected{% endif %}>-- Χωρίς είσοδο --</option>
+                    <option value="1" {% if airline['entrance'] == 1 %}selected{% endif %}>1</option>
+                    <option value="2" {% if airline['entrance'] == 2 %}selected{% endif %}>2</option>
+                    <option value="3" {% if airline['entrance'] == 3 %}selected{% endif %}>3</option>
+                    <option value="4" {% if airline['entrance'] == 4 %}selected{% endif %}>4</option>
+                </select>
+            </div>
+
+            <div class="btn-group">
+                <button type="submit" class="btn-save">
+                    <span class="material-icons">save</span> Αποθήκευση
+                </button>
+                <a href="{{ url_for('airport.airlines') }}" class="btn-cancel">
+                    <span class="material-icons">cancel</span> Ακύρωση
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Πληροφορίες -->
+    <div class="info-box">
+        <p>
+            <strong>💡 Σημείωση:</strong> Αν η αεροπορική εταιρεία δεν έρχεται ακόμα στο αεροδρόμιο, άφησε το πεδίο "Είσοδος" κενό.
+        </p>
+    </div>
+{% endblock %}

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Αφίξεις - ATH | Taxi Tracker</title>
+    <title>Αναχωρήσεις - ATH | Taxi Tracker</title>
     <style>
         /* Dark Theme - Airport Style */
         body {
@@ -17,12 +17,12 @@
         .header-container {
             text-align: center;
             margin-bottom: 30px;
-            border-bottom: 2px solid #ffb300;
+            border-bottom: 2px solid #2196F3;
             padding-bottom: 15px;
         }
 
         h1 {
-            color: #ffb300;
+            color: #2196F3;
             margin: 0;
             text-transform: uppercase;
             letter-spacing: 3px;
@@ -52,7 +52,7 @@
         }
 
         th {
-            color: #ffb300;
+            color: #2196F3;
             padding: 15px;
             text-align: left;
             font-size: 1.1rem;
@@ -118,7 +118,7 @@
         .status-delayed { background-color: #b71c1c; color: #ffcdd2; }
         .status-scheduled { background-color: #424242; color: #bdbdbd; }
 
-        .flight-num { color: #ffb300; font-weight: bold; }
+        .flight-num { color: #2196F3; font-weight: bold; }
         
         .aircraft-type {
             color: #999;
@@ -138,7 +138,7 @@
 <body>
 
     <div class="header-container">
-        <h1>🛬 ΑΦΙΞΕΙΣ - ATHENS INT.</h1>
+        <h1>🛫 ΑΝΑΧΩΡΗΣΕΙΣ - ATHENS INT.</h1>
         <div class="refresh-note">Πατήστε F5 για ανανέωση</div>
     </div>
 
@@ -152,8 +152,7 @@
                         <th>ΩΡΑ</th>
                         <th>ΠΤΗΣΗ</th>
                         <th>ΑΕΡΟΠΟΡΙΚΗ</th>
-                  <!--  <th>ΑΕΡΟΣΚΑΦΟΣ</th>  -->
-                        <th>ΑΠΟ</th>
+                        <th>ΠΡΟΣ</th>
                         <th>ΚΑΤΑΣΤΑΣΗ</th>
                     </tr>
                 </thead>
@@ -185,17 +184,11 @@
                                 <span>{{ flight.airline_iata }}</span>
                             </div>
                         </td>
-
-                        <!-- 4. ΑΕΡΟΣΚΑΦΟΣ
-                        <td class="aircraft-type">
-                            {{ flight.aircraft if flight.aircraft else '-' }}
-                        </td>
-                        -->
                         
-                        <!-- 5. ΠΡΟΟΡΙΣΜΟΣ -->
-                        <td>{{ flight.dep_iata }}</td>
+                        <!-- 4. ΠΡΟΟΡΙΣΜΟΣ -->
+                        <td>{{ flight.arr_iata }}</td>
                         
-                        <!-- 6. ΚΑΤΑΣΤΑΣΗ -->
+                        <!-- 5. ΚΑΤΑΣΤΑΣΗ -->
                         <td>
                             {% set s = flight.status|lower %}
                             <span class="status-badge 
@@ -209,7 +202,7 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="6" style="text-align: center; padding: 30px;">
+                        <td colspan="5" style="text-align: center; padding: 30px;">
                             Δεν βρέθηκαν πτήσεις αυτή τη στιγμή.
                         </td>
                     </tr>

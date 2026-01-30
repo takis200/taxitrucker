@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+
+{% block title %}Taxi Tracker - Αεροπορικές Εταιρείες{% endblock %}
+
+{% block styles %}
+<style>
+    /* --- Specific Styles for Airlines Page --- */
+
+    /* Φόρμα Προσθήκης */
+    .form-row {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+
+    .form-group {
+        flex: 1;
+        min-width: 150px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+        color: var(--secondary-color);
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        box-sizing: border-box;
+        font-size: 1em;
+    }
+
+    /* Κουμπί Προσθήκης (Πράσινο) */
+    .btn-add {
+        background-color: var(--success-color);
+        color: white;
+        border: none;
+        padding: 11px 25px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .btn-add:hover { background-color: #219150; }
+
+    /* Στυλ Πίνακα & Ενεργειών */
+    .table-container {
+        background-color: var(--card-bg);
+        padding: 20px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        overflow-x: auto;
+    }
+
+    th {
+        background-color: var(--secondary-color);
+        color: white;
+        cursor: pointer;
+    }
+    
+    th a { 
+        color: white; 
+        text-decoration: none; 
+        display: block; 
+    }
+
+    /* Κουμπιά Edit/Delete */
+    .btn-action {
+        text-decoration: none;
+        border: none;
+        background: none;
+        cursor: pointer;
+        padding: 5px;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .btn-edit { color: var(--warning-color); }
+    .btn-delete { color: var(--danger-color); }
+    .btn-edit:hover, .btn-delete:hover { transform: scale(1.1); }
+    
+    /* Badge για την είσοδο (πόρτα) */
+    .entrance-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-weight: bold;
+        font-size: 16px;
+        color: white;
+        text-align: center;
+        min-width: 40px;
+    }
+    
+    .entrance-1 { background-color: #3498db; }
+    .entrance-2 { background-color: #27ae60; }
+    .entrance-3 { background-color: #e67e22; }
+    .entrance-4 { background-color: #e74c3c; }
+    
+    /* Για airlines χωρίς είσοδο */
+    .no-entrance {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-weight: bold;
+        font-size: 14px;
+        color: #7f8c8d;
+        background-color: #ecf0f1;
+        border: 2px dashed #bdc3c7;
+    }
+    
+    :root {
+        --warning-color: #f39c12;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <!-- Τίτλος -->
+    <h1>
+        <span class="material-icons" style="color: #3498db; font-size: 36px; vertical-align: middle;">flight</span> 
+        Αεροπορικές Εταιρείες
+    </h1>
+
+    <!-- Φόρμα Προσθήκης (Card) -->
+    <div class="card">
+        <h3>➕ Προσθήκη Νέας Αεροπορικής Εταιρείας</h3>
+        <form method="POST" action="{{ url_for('airport.add_airline') }}">
+            <input type="hidden" name="add_airline" value="1">
+            <div class="form-row">
+                <div class="form-group" style="flex: 2;">
+                    <label>Όνομα Εταιρείας</label>
+                    <input type="text" name="name" class="form-control" placeholder="π.χ. Aegean Airlines" required>
+                </div>
+                <div class="form-group">
+                    <label>Είσοδος (Πόρτα)</label>
+                    <select name="entrance" class="form-control">
+                        <option value="">-- Χωρίς είσοδο --</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-add">
+                    <span class="material-icons">add</span> Προσθήκη
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Μπάρα Αναζήτησης -->
+    <div style="margin-top: 30px; margin-bottom: 30px; position: relative;">
+        <span style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #888;">🔍</span>
+        <input type="text" id="searchInput" onkeyup="searchAirlines()" placeholder="Αναζήτηση αεροπορικής εταιρείας..." 
+            style="width: 100%; padding: 12px 12px 12px 40px; border: 2px solid #3498db; border-radius: 8px; font-size: 16px; box-sizing: border-box; background-color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+    </div>
+
+    <!-- Πίνακας Αεροπορικών Εταιρειών (Table Container) -->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 60%;">
+                        <a href="?sort=name&order={{ 'desc' if sort_by=='name' and order=='asc' else 'asc' }}">
+                            Όνομα Εταιρείας {{ '▼' if sort_by=='name' and order=='desc' else ('▲' if sort_by=='name' else '') }}
+                        </a>
+                    </th>
+                    <th style="width: 20%; text-align: center;">
+                        <a href="?sort=entrance&order={{ 'desc' if sort_by=='entrance' and order=='asc' else 'asc' }}">
+                            Είσοδος {{ '▼' if sort_by=='entrance' and order=='desc' else ('▲' if sort_by=='entrance' else '') }}
+                        </a>
+                    </th>
+                    <th style="width: 20%; text-align: center;">Ενέργειες</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for airline in airlines %}
+                <tr>
+                    <td>{{ airline['name'] }}</td>
+                    <td style="text-align: center;">
+                        {% if airline['entrance'] %}
+                            <span class="entrance-badge entrance-{{ airline['entrance'] }}">
+                                {{ airline['entrance'] }}
+                            </span>
+                        {% else %}
+                            <span class="no-entrance">⏳ Χωρίς είσοδο</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: center;">
+                        <!-- Κουμπί Edit -->
+                        <a href="{{ url_for('airport.edit_airline', airline_id=airline['id']) }}" class="btn-action btn-edit" title="Επεξεργασία">
+                            <span class="material-icons" style="font-size: 18px;">edit</span>
+                        </a>
+                        
+                        <!-- Κουμπί Delete -->
+                        <form action="{{ url_for('airport.delete_airline', airline_id=airline['id']) }}" method="POST" style="display:inline;" 
+                              data-confirm="Διαγραφή της αεροπορικής εταιρείας {{ airline['name'] }};" 
+                              onsubmit="return confirm(this.getAttribute('data-confirm'));">
+                            <button type="submit" class="btn-action btn-delete" title="Διαγραφή">
+                                <span class="material-icons" style="font-size: 18px;">delete</span>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="3" style="text-align: center; padding: 20px; color: #7f8c8d;">
+                        Δεν υπάρχουν καταχωρημένες αεροπορικές εταιρείες.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function searchAirlines() {
+        var input = document.getElementById("searchInput");
+        var filter = input.value.toUpperCase();
+        var table = document.getElementsByTagName("table")[0]; 
+        if (!table) return;
+        
+        var tr = table.getElementsByTagName("tr");
+
+        for (var i = 1; i < tr.length; i++) {
+            var row = tr[i];
+            var textContent = row.textContent || row.innerText;
+            
+            if (textContent.toUpperCase().indexOf(filter) > -1) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        }
+    }
+</script>
+{% endblock %}

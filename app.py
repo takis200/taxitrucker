@@ -29,6 +29,16 @@ app = Flask(__name__)
 app.secret_key = 'super_secret_key'
 DB_NAME = "taxi.db"
 
+# ΠΡΟΣΘΗΚΗ: Custom Jinja2 filter για ελληνικές ημερομηνίες
+@app.template_filter('greek_date')
+def greek_date_filter(date_str):
+    """Μετατρέπει YYYY-MM-DD σε DD-MM-YYYY"""
+    try:
+        date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+        return date_obj.strftime('%d-%m-%Y')
+    except:
+        return date_str  # Αν υπάρξει σφάλμα, επιστρέφει την αρχική
+
 # --- ΠΡΟΣΘΕΣΤΕ ΕΔΩ ΤΑ BLUEPRINT ---
 from routes.main import main_bp  # 1. Εισαγωγή
 app.register_blueprint(main_bp)  # 2. Εγγραφή

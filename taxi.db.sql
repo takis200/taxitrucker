@@ -1,4 +1,10 @@
 BEGIN TRANSACTION;
+CREATE TABLE IF NOT EXISTS "airlines" (
+	"id"	INTEGER,
+	"name"	TEXT NOT NULL UNIQUE,
+	"entrance"	INTEGER CHECK("entrance" IS NULL OR ("entrance" >= 1 AND "entrance" <= 4)),
+	PRIMARY KEY("id" AUTOINCREMENT)
+);
 CREATE TABLE IF NOT EXISTS "app_earnings" (
 	"date"	TEXT,
 	"freenow"	REAL DEFAULT 0,

@@ -1,8 +1,12 @@
-{% extends "base.html" %}
+{% extends "base.html" %} 
 
-{% block title %}Taxi Tracker - Ιστορικό Διαδρομών{% endblock %}
+{% block title %}Taxi Tracker - Ιστορικό Διαδρομών{% endblock %} 
 
 {% block styles %}
+<!-- Flatpickr CSS & Theme -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+
 <style>
     /* --- Φίλτρα Αναζήτησης --- */
     .filters-card {
@@ -16,8 +20,8 @@
     .filters-form {
         display: flex;
         gap: 20px;
-        flex-wrap: wrap;
-        align-items: flex-end;
+        flex-wrap: nowrap;
+        align-items: flex-start;
     }
 
     .form-group {
@@ -39,6 +43,14 @@
         font-size: 1em;
     }
 
+    .buttons-wrapper {
+    display: flex !important;
+    flex-direction: row !important;  /* ΔΙΠΛΑ ΔΙΠΛΑ */
+    gap: 12px !important;
+    margin-top: 0 !important;        /* Ίδιο ύψος */
+    flex-shrink: 0 !important;
+    }
+
     .btn-search {
         background-color: var(--accent-color);
         color: white;
@@ -50,6 +62,7 @@
         display: flex;
         align-items: center;
         gap: 5px;
+        margin-top: 22px;
     }
     
     .btn-clear {
@@ -62,6 +75,7 @@
             display: flex;
             align-items: center;
             gap: 5px;
+            margin-top: 22px;
     }
 
     /* --- Dashboard Stats (Cards) --- */
@@ -153,6 +167,44 @@
         grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
         gap: 20px;
     }
+
+/* MOBILE RESPONSIVE - Φίλτρα */
+@media (max-width: 768px) {
+    .filters-form {
+        flex-direction: column !important;
+        gap: 12px !important;
+        padding: 0 10px;
+    }
+    
+    .filters-card {
+        padding: 15px !important;
+    }
+    
+    .form-group {
+        width: 100% !important;
+    }
+    
+    /* ΚΟΥΜΠΙΑ ΔΙΠΛΑ-ΔΙΠΛΑ ΜΟΝΟ ΣΕ MOBILE */
+    .buttons-wrapper {
+        display: flex !important;
+        gap: 12px !important;
+        margin-top: 10px !important;
+        flex-direction: row !important;  /* ΔΙΠΛΑ-ΔΙΠΛΑ */
+    }
+    
+    .btn-search,
+    .btn-clear {
+        flex: 1 !important;           /* Ίδιο μέγεθος */
+        padding: 12px 16px !important;
+        font-size: 16px !important;
+        justify-content: center !important;
+        margin: 0 !important;         /* Αφαιρεί margins */
+    }
+    
+    #date_range {
+        font-size: 16px !important;
+    }
+}
 </style>
 {% endblock %}
 
@@ -162,14 +214,17 @@
     <!-- Φίλτρα -->
     <div class="filters-card">
         <form method="GET" class="filters-form">
+            
+            <!-- Κρυφά πεδία για να διατηρηθεί η συμβατότητα με το backend -->
+            <input type="hidden" name="start_date" id="start_date" value="{{ start_date }}">
+            <input type="hidden" name="end_date" id="end_date" value="{{ end_date }}">
+
+            <!-- Νέο πεδίο Flatpickr Range με Links -->
             <div class="form-group">
-                <label>Από:</label>
-                <input type="date" name="start_date" value="{{ start_date }}" class="form-control">
+                <label>Εύρος Ημερομηνιών:</label>
+                <input type="text" id="date_range" class="form-control" placeholder="Επιλέξτε ημερομηνίες..." style="min-width: 260px;">
             </div>
-            <div class="form-group">
-                <label>Έως:</label>
-                <input type="date" name="end_date" value="{{ end_date }}" class="form-control">
-            </div>
+
             <div class="form-group">
                 <label>Ξενοδοχείο:</label>
                 <select name="hotel" class="form-control">
@@ -181,6 +236,7 @@
                     {% endfor %}
                 </select>
             </div>
+
             <div class="form-group">
                 <label>Προορισμός:</label>
                 <select name="dest" class="form-control">
@@ -193,15 +249,20 @@
                 </select>
             </div>
             
-            <button type="submit" class="btn-search">
-                <span class="material-icons">search</span> Αναζήτηση
-            </button>
-            
-            {% if start_date != '' or end_date != '' %}
-            <a href="{{ url_for('history.history') }}" class="btn-clear">
-                 <span class="material-icons">clear</span> Καθαρισμός
-            </a>
-            {% endif %}
+            <!-- Βάλε το wrapper ΠΡΙΝ το κλείσιμο του form -->
+            <div class="form-group" style="order: 999;">  <!-- Τελευταίο πεδίο -->
+                <div class="buttons-wrapper">
+                    <button type="submit" class="btn-search">
+                        <span class="material-icons">search</span> Αναζήτηση
+                    </button>
+                    
+                    {% if start_date != '' or end_date != '' %}
+                    <a href="{{ url_for('history.history') }}" class="btn-clear" id="btnClear">
+                        <span class="material-icons">clear</span> Καθαρισμός
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
         </form>
     </div>
 
@@ -226,14 +287,14 @@
             </h3>
             <div class="value">{{ "%.2f"|format(total_apps_income) }}€</div>
             <div class="sub-text">
-                F:{{ "%.0f"|format(apps_breakdown.freenow) }} | U:{{ "%.0f"|format(apps_breakdown.uber) }} | B:{{ "%.0f"|format(apps_breakdown.bolt) }}
+                F:{{ "%.0f"|format(apps_breakdown.freenow) }} | U:{{ "%.0f"|format(apps_breakdown.uber) }} | B:{{ "%.0f"|format(apps_breakdown.bolt) }} | E:{{ "%.0f"|format(apps_breakdown.extras) }}
             </div>
         </div>
 
         <!-- Έξοδα (ΜΕ ΚΟΥΜΠΙ EDIT) -->
         <div class="dashboard-card expense">
             <h3>
-                <span class="material-icons">local_gas_station</span> Έξοδα
+                <span class="material-icons">local_gas_station</span> Καύσιμα
                 <!-- ΚΟΥΜΠΙ EDIT: Εμφανίζεται μόνο αν επιλεγεί 1 μέρα -->
                 {% if start_date == end_date %}
                 <a href="{{ url_for('history.edit_expenses', date_str=start_date) }}" class="edit-btn-small" title="Επεξεργασία Εξόδων">✏️</a>
@@ -241,16 +302,16 @@
             </h3>
             <div class="value">-{{ "%.2f"|format(total_expenses) }}€</div>
             <div class="sub-text">
-                Καύσιμα: {{ "%.0f"|format(total_fuel) }} | Λοιπά: {{ "%.0f"|format(total_misc) }}
+                Καύσιμα: {{ "%.0f"|format(total_fuel) }}
             </div>
         </div>
 
         <!-- Διόδια / Credits -->
         <div class="dashboard-card expense">
             <h3><span class="material-icons">toll</span> Διόδια & Credits</h3>
-            <div class="value" style="font-size: 1.5em;">-{{ "%.2f"|format(total_tolls + total_credits_cost) }}€</div>
+            <div class="value" style="font-size: 1.5em;">-{{ "%.2f"|format(total_tolls + total_credits_cost + total_misc) }}€</div>
             <div class="sub-text">
-                Διόδια: {{ "%.2f"|format(total_tolls) }} | Credits: {{ "%.2f"|format(total_credits_cost) }}
+                Διόδια: {{ "%.2f"|format((total_tolls + total_misc)) }} | Credits: {{ "%.2f"|format(total_credits_cost) }}
             </div>
         </div>
 
@@ -374,4 +435,48 @@
         </div>
 
     </div>
+
+    <!-- Flatpickr Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/gr.js"></script>
+    <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const fp = flatpickr("#date_range", {
+                    mode: "range",
+                    dateFormat: "d-m-Y",  // Πώς φαίνεται στο input
+                    locale: "gr",
+                    onChange: function(selectedDates, dateStr, instance) {
+                        if (selectedDates.length === 2) {
+                            document.getElementById('start_date').value = instance.formatDate(selectedDates[0], "Y-m-d");
+                            document.getElementById('end_date').value = instance.formatDate(selectedDates[1], "Y-m-d");
+                        }
+                    }
+                });
+
+            // ΣΥΓΧΡΟΝΙΣΜΟΣ με backend values
+            const startVal = "{{ start_date }}";
+            const endVal = "{{ end_date }}";
+            if (startVal && endVal && startVal !== '' && endVal !== '') {
+                // Μετατρέπουμε Y-m-d σε Date objects
+                const startDate = new Date(startVal + 'T00:00');
+                const endDate = new Date(endVal + 'T00:00');
+                fp.setDate([startDate, endDate], false);
+            }
+
+            // Κουμπί Καθαρισμός
+            const btnClear = document.getElementById('btnClear');
+            if (btnClear) {
+                btnClear.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const today = new Date();
+                    fp.setDate([today, today], true);
+                    // Redirect με σημερινή ημερομηνία
+                    const y = today.getFullYear();
+                    const m = String(today.getMonth() + 1).padStart(2, '0');
+                    const d = String(today.getDate()).padStart(2, '0');
+                    window.location.href = "{{ url_for('history.history') }}?start_date=" + y + "-" + m + "-" + d + "&end_date=" + y + "-" + m + "-" + d;
+                });
+            }
+        });
+    </script>
 {% endblock %}

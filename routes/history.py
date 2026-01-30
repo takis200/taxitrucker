@@ -70,10 +70,10 @@ def history():
     
     total_fuel = exp_data['fuel'] if exp_data else 0
     total_misc = exp_data['misc'] if exp_data else 0
-    total_expenses = total_fuel + total_misc
+    total_expenses = total_fuel
     
     total_revenue = total_ride_income + total_apps_income
-    net_profit = total_revenue - total_tolls - total_credits_cost - total_expenses
+    net_profit = total_revenue - total_tolls - total_credits_cost - total_expenses - total_misc
     
     # Stats
     all_hotels = conn.execute("SELECT DISTINCT hotel_name FROM rides ORDER BY hotel_name").fetchall()

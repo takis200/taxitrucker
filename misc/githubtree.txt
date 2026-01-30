@@ -1,0 +1,67 @@
+├── api/
+│   └── airlabs.env
+├── data/
+│   ├── airlines.json
+│   ├── airports.json
+│   ├── drivers.xlsx
+│   ├── hotels.txt
+│   ├── parts.xlsx
+│   └── rates.xlsx
+├── routes/
+│   ├── __init__.py
+│   ├── airport.py
+│   ├── credits.py
+│   ├── drivers.py
+│   ├── exportrates.py
+│   ├── history.py
+│   ├── main.py
+│   ├── services.py
+│   └── settings.py
+├── static/
+│   ├── css/
+│   │   └── style.css
+│   ├── fonts/
+│   │   ├── material-icons-v145-latin-regular.woff2
+│   │   ├── roboto-v50-greek_latin-300.woff2
+│   │   ├── roboto-v50-greek_latin-300italic.woff2
+│   │   ├── roboto-v50-greek_latin-500.woff2
+│   │   ├── roboto-v50-greek_latin-500italic.woff2
+│   │   ├── roboto-v50-greek_latin-700.woff2
+│   │   ├── roboto-v50-greek_latin-700italic.woff2
+│   │   ├── roboto-v50-greek_latin-italic.woff2
+│   │   └── roboto-v50-greek_latin-regular.woff2
+│   ├── icons/
+│   │   ├── favicon.ico
+│   │   ├── favicon.png
+│   │   └── favicon.svg
+│   └── js/
+│       └── Sortable.min.js
+├── templates/
+│   ├── arrivals.html
+│   ├── base.html
+│   ├── credits.html
+│   ├── drivers.html
+│   ├── edit_apps.html
+│   ├── edit_driver.html
+│   ├── edit_expenses.html
+│   ├── edit_ride.html
+│   ├── history.html
+│   ├── index.html
+│   ├── part_registry_form.html
+│   ├── parts_registry.html
+│   ├── service_form.html
+│   ├── services.html
+│   ├── settings.html
+│   ├── workshop_form.html
+│   ├── workshop_types.html
+│   └── workshops.html
+├── tools/
+│   ├── import_drivers_from_excel.py
+│   ├── import_rates_from_excel.py
+│   ├── reset_db.py
+│   └── schema_db.py
+├── app.py
+├── inport.py
+├── services_repo.py
+├── taxi.db.sql
+└── utils.py
