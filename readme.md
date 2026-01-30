@@ -1,4 +1,4 @@
-text
+
 # 🚕 Taxi Tracker
 
 > Ολοκληρωμένο σύστημα διαχείρισης ταξί με παρακολούθηση διαδρομών, credits, service & πτήσεων αεροδρομίου
@@ -255,7 +255,6 @@ taxitrucker/
 ├── taxi.db                  # SQLite database (generated)
 ├── taxi.db.sql              # Database schema SQL
 └── utils.py                 # Utility functions (DB, logging, defaults)
-
 🗄️ Database Schema
 Κύριοι Πίνακες
 airlines
