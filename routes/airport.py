@@ -82,7 +82,7 @@ def arrivals():
     try:
         response = requests.get(
             "http://airlabs.co/api/v9/schedules",
-            params={'api_key': AIRLABS_API_KEY, 'arr_iata': 'ATH', 'limit': 50},
+            params={'api_key': AIRLABS_API_KEY, 'arr_iata': 'ATH', 'limit': 100},
             timeout=30
         )
         
@@ -153,7 +153,7 @@ def departures():
         params = {
             'api_key': AIRLABS_API_KEY,
             'dep_iata': 'ATH',
-            'limit': 50
+            'limit': 100
         }
         
         response = requests.get(url, params=params, timeout=30)

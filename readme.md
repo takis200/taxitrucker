@@ -1,4 +1,3 @@
-
 # 🚕 Taxi Tracker
 
 > Ολοκληρωμένο σύστημα διαχείρισης ταξί με παρακολούθηση διαδρομών, credits, service & πτήσεων αεροδρομίου
@@ -80,14 +79,14 @@
 
 ### Tech Stack
 
-Backend: Flask 3.1 (Python 3.13)
+```
+Backend:  Flask 3.1 (Python 3.13)
 Database: SQLite 3
 Frontend: HTML5, CSS3, Jinja2 Templates
-UI: Material Icons, Roboto Font
-JS: Sortable.js (drag & drop)
-APIs: AirLabs API (flight data)
-
-text
+UI:       Material Icons, Roboto Font
+JS:       Sortable.js (drag & drop)
+APIs:     AirLabs API (flight data)
+```
 
 ### Blueprint Structure
 
@@ -101,42 +100,49 @@ routes/
 ├── settings.py     # Ξενοδοχεία, προορισμοί, rates
 ├── exportrates.py  # Export rates σε Excel
 └── airport.py      # Arrivals, Departures, Airlines
-🚀 Εγκατάσταση
-Προαπαιτούμενα
-Python 3.13+
+```
 
-pip
+---
 
-SQLite3
+## 🚀 Εγκατάσταση
 
-Βήματα
-Clone το repository
+### Προαπαιτούμενα
 
-bash
+- Python 3.13+
+- pip
+- SQLite3
+
+### Βήματα
+
+1. **Clone το repository**
+```bash
 git clone https://github.com/takis200/taxitrucker.git
 cd taxitrucker
-Εγκατάσταση dependencies
+```
 
-bash
+2. **Εγκατάσταση dependencies**
+```bash
 pip install flask requests pandas openpyxl
-Δημιουργία βάσης δεδομένων
+```
 
-bash
+3. **Δημιουργία βάσης δεδομένων**
+```bash
 # Χρήση του schema
 sqlite3 taxi.db < taxi.db.sql
 
 # Ή με το tool
 python tools/schema_db.py
-Προσθήκη API Key (για airport module)
+```
 
-bash
+4. **Προσθήκη API Key (για airport module)**
+```bash
 # Δημιούργησε αρχείο api/airlabs.env
 echo "YOUR_AIRLABS_API_KEY" > api/airlabs.env
+```
 Λάβε δωρεάν API key από: https://airlabs.co
 
-Import αρχικών δεδομένων
-
-bash
+5. **Import αρχικών δεδομένων**
+```bash
 # Οδηγοί
 python tools/import_drivers_from_excel.py
 
@@ -145,59 +151,58 @@ python tools/import_rates_from_excel.py
 
 # Airlines
 python tools/import_airlines.py
-Εκκίνηση εφαρμογής
+```
 
-bash
+6. **Εκκίνηση εφαρμογής**
+```bash
 python app.py
-Άνοιγμα στον browser
+```
 
-text
+7. **Άνοιγμα στον browser**
+```
 http://localhost:5000
-📚 Χρήση
-Καταγραφή Διαδρομής
-Πήγαινε στην Αρχική σελίδα
+```
 
-Επίλεξε Ξενοδοχείο & Προορισμό
+---
 
-Συμπλήρωσε Τιμή & Διόδια
+## 📚 Χρήση
 
-Credits υπολογίζονται αυτόματα
+### Καταγραφή Διαδρομής
 
-Πάτα Καταχώρηση
+1. Πήγαινε στην **Αρχική** σελίδα
+2. Επίλεξε **Ξενοδοχείο** & **Προορισμό**
+3. Συμπλήρωσε **Τιμή** & **Διόδια**
+4. Credits υπολογίζονται αυτόματα
+5. Πάτα **Καταχώρηση**
 
-Έλεγχος Credits
-Πήγαινε στο Credits menu
+### Έλεγχος Credits
 
-Δες την τρέχουσα ισορροπία
+1. Πήγαινε στο **Credits** menu
+2. Δες την τρέχουσα ισορροπία
+3. Προσθήκη/Αφαίρεση credits με σημειώσεις
+4. Tracking χρεών & πληρωμών
 
-Προσθήκη/Αφαίρεση credits με σημειώσεις
+### Live Πτήσεις
 
-Tracking χρεών & πληρωμών
+1. Πήγαινε στο **Airport** menu
+2. Επίλεξε **Αφίξεις** ή **Αναχωρήσεις**
+3. Δες live πτήσεις με:
+   - Scheduled & Estimated time
+   - Airline & προέλευση/προορισμός
+   - Status & καθυστερήσεις
 
-Live Πτήσεις
-Πήγαινε στο Airport menu
+### Διαχείριση Airlines
 
-Επίλεξε Αφίξεις ή Αναχωρήσεις
+1. **Airport** → **Αεροπορικές Εταιρείες**
+2. Προσθήκη νέας airline με είσοδο (1-4)
+3. Αναζήτηση & sorting
+4. Edit/Delete υπαρχουσών
 
-Δες live πτήσεις με:
+---
 
-Scheduled & Estimated time
+## 📁 Δομή Project
 
-Airline & προέλευση/προορισμός
-
-Status & καθυστερήσεις
-
-Διαχείριση Airlines
-Airport → Αεροπορικές Εταιρείες
-
-Προσθήκη νέας airline με είσοδο (1-4)
-
-Αναζήτηση & sorting
-
-Edit/Delete υπαρχουσών
-
-📁 Δομή Project
-text
+```
 taxitrucker/
 ├── api/
 │   └── airlabs.env           # API key για AirLabs
@@ -255,15 +260,23 @@ taxitrucker/
 ├── taxi.db                  # SQLite database (generated)
 ├── taxi.db.sql              # Database schema SQL
 └── utils.py                 # Utility functions (DB, logging, defaults)
-🗄️ Database Schema
-Κύριοι Πίνακες
-airlines
-sql
+```
+
+---
+
+## 🗄️ Database Schema
+
+### Κύριοι Πίνακες
+
+#### `airlines`
+```sql
 id INTEGER PRIMARY KEY
 name TEXT UNIQUE NOT NULL
 entrance INTEGER (1-4 or NULL)
-rides
-sql
+```
+
+#### `rides`
+```sql
 id INTEGER PRIMARY KEY
 date TEXT
 hotel_name TEXT
@@ -271,15 +284,19 @@ dest_name TEXT
 price REAL
 tolls REAL
 credits_charged REAL
-drivers
-sql
+```
+
+#### `drivers`
+```sql
 id INTEGER PRIMARY KEY
 col_new TEXT
 col_old TEXT
 name TEXT NOT NULL
 phone TEXT
-credit_check
-sql
+```
+
+#### `credit_check`
+```sql
 id INTEGER PRIMARY KEY
 date TEXT UNIQUE
 start_balance INTEGER
@@ -289,8 +306,10 @@ correction INTEGER
 debt_source TEXT
 is_paid INTEGER (boolean)
 notes TEXT
-services
-sql
+```
+
+#### `services`
+```sql
 id INTEGER PRIMARY KEY
 service_date TEXT
 odometer_km INTEGER
@@ -298,8 +317,10 @@ workshop_name TEXT
 labor_cost REAL
 note TEXT
 created_at TEXT
-service_lines
-sql
+```
+
+#### `service_lines`
+```sql
 id INTEGER PRIMARY KEY
 service_id INTEGER (FK → services)
 part_code TEXT
@@ -307,66 +328,65 @@ part_description TEXT
 qty REAL
 unit_price REAL
 line_total REAL
-hotels & destinations & rates
-sql
+```
+
+#### `hotels` & `destinations` & `rates`
+```sql
 hotels: id, name, sort_order, is_active
 destinations: id, name, sort_order, is_active
 rates: hotel_id (FK), dest_id (FK), credits
-Indexes
-idx_services_date on services(service_date)
+```
 
-idx_lines_service_id on service_lines(service_id)
+### Indexes
+- `idx_services_date` on services(service_date)
+- `idx_lines_service_id` on service_lines(service_id)
+- `ux_hotels_name` UNIQUE on hotels(name)
 
-ux_hotels_name UNIQUE on hotels(name)
+---
 
-🔌 API Integrations
-AirLabs API
-Endpoint: http://airlabs.co/api/v9/schedules
+## 🔌 API Integrations
 
-Used for:
+### AirLabs API
 
-Live arrivals (arr_iata=ATH)
+**Endpoint:** `http://airlabs.co/api/v9/schedules`
 
-Live departures (dep_iata=ATH)
+**Used for:**
+- Live arrivals (arr_iata=ATH)
+- Live departures (dep_iata=ATH)
 
-Features:
+**Features:**
+- Automatic filtering of codeshare flights
+- Time parsing & formatting
+- Delay detection
+- Airline & airport name lookup από JSON
 
-Automatic filtering of codeshare flights
+**Rate Limits:** Free tier = 100 requests/day
 
-Time parsing & formatting
+---
 
-Delay detection
+## 🎨 UI/UX Features
 
-Airline & airport name lookup από JSON
+### Design System
+- **Colors:** Material Design palette
+- **Typography:** Roboto (Greek + Latin support)
+- **Icons:** Material Icons
+- **Layout:** Responsive grid system
 
-Rate Limits: Free tier = 100 requests/day
+### Special Features
+- 🔍 Live search σε πίνακες
+- ↕️ Sorting με arrows
+- 🎨 Color-coded badges (airlines entrances, delays)
+- 📱 Mobile-optimized navigation
+- ⏱️ Smart time sorting (μεταμεσονύκτιες πτήσεις στο τέλος)
 
-🎨 UI/UX Features
-Design System
-Colors: Material Design palette
+---
 
-Typography: Roboto (Greek + Latin support)
+## 🛠️ Development
 
-Icons: Material Icons
+### Adding a New Route
 
-Layout: Responsive grid system
-
-Special Features
-🔍 Live search σε πίνακες
-
-↕️ Sorting με arrows
-
-🎨 Color-coded badges (airlines entrances, delays)
-
-📱 Mobile-optimized navigation
-
-⏱️ Smart time sorting (μεταμεσονύκτιες πτήσεις στο τέλος)
-
-🛠️ Development
-Adding a New Route
-Δημιούργησε αρχείο στο routes/your_module.py
-
-python
+1. Δημιούργησε αρχείο στο `routes/your_module.py`
+```python
 from flask import Blueprint, render_template
 
 your_bp = Blueprint('your_module', __name__)
@@ -374,15 +394,19 @@ your_bp = Blueprint('your_module', __name__)
 @your_bp.route('/your-path')
 def your_function():
     return render_template('your_template.html')
-Register στο app.py
+```
 
-python
+2. Register στο `app.py`
+```python
 from routes.your_module import your_bp
 app.register_blueprint(your_bp)
-Δημιούργησε template στο templates/your_template.html
+```
 
-Database Migrations
-bash
+3. Δημιούργησε template στο `templates/your_template.html`
+
+### Database Migrations
+
+```bash
 # Backup current DB
 cp taxi.db taxi.db.backup
 
@@ -391,60 +415,80 @@ sqlite3 taxi.db < your_migration.sql
 
 # Or reset entirely
 python tools/reset_db.py
-Logging
-Όλα τα actions καταγράφονται στο logs/activity_YYYY-MM.txt:
+```
 
-python
+### Logging
+
+Όλα τα actions καταγράφονται στο `logs/activity_YYYY-MM.txt`:
+```python
 from utils import log_action
 log_action("User performed action X")
-📊 Import/Export
-Import Airlines από Excel
-bash
-python tools/import_airlines.py
-Excel format:
+```
 
-text
+---
+
+## 📊 Import/Export
+
+### Import Airlines από Excel
+
+```bash
+python tools/import_airlines.py
+```
+
+**Excel format:**
+```
 name                | entrance
 --------------------|----------
 Aegean Airlines     | 1
 Ryanair            | 2
 Wizz Air           | (empty for no entrance)
-Export Rates σε Excel
-Πήγαινε στο Settings menu
+```
 
-Πάτα Εξαγωγή Rates (Excel)
+### Export Rates σε Excel
 
-Κατέβασε rates_YYYY-MM-DD.xlsx
+1. Πήγαινε στο **Settings** menu
+2. Πάτα **Εξαγωγή Rates (Excel)**
+3. Κατέβασε `rates_YYYY-MM-DD.xlsx`
 
-🤝 Contributing
+---
+
+## 🤝 Contributing
+
 Contributions are welcome! Please:
 
-Fork το repo
+1. Fork το repo
+2. Create feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open Pull Request
 
-Create feature branch (git checkout -b feature/AmazingFeature)
+---
 
-Commit changes (git commit -m 'Add AmazingFeature')
+## 📝 License
 
-Push to branch (git push origin feature/AmazingFeature)
+MIT License - see [LICENSE](LICENSE) file for details
 
-Open Pull Request
+---
 
-📝 License
-MIT License - see LICENSE file for details
+## 👨‍💻 Author
 
-👨‍💻 Author
-Takis - GitHub
+**Takis** - [GitHub](https://github.com/takis200)
 
-🙏 Acknowledgments
-Flask - Web framework
+---
 
-AirLabs - Flight data API
+## 🙏 Acknowledgments
 
-Material Icons - Icon set
+- [Flask](https://flask.palletsprojects.com/) - Web framework
+- [AirLabs](https://airlabs.co) - Flight data API
+- [Material Icons](https://fonts.google.com/icons) - Icon set
+- [SortableJS](https://sortablejs.github.io/Sortable/) - Drag & drop
 
-SortableJS - Drag & drop
+---
 
-📞 Support
-Για ερωτήσεις ή issues, άνοιξε ένα GitHub Issue
+## 📞 Support
 
-Made with ❤️ for taxi drivers in Greece 🇬🇷
+Για ερωτήσεις ή issues, άνοιξε ένα [GitHub Issue](https://github.com/takis200/taxitrucker/issues)
+
+---
+
+**Made with ❤️ for taxi drivers in Greece 🇬🇷**

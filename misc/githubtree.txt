@@ -42,7 +42,6 @@
 ├── templates/
 │   ├── airlines.html
 │   ├── airport_menu.html
-│   ├── arrivals - Αντιγραφή.html
 │   ├── arrivals.html
 │   ├── base.html
 │   ├── credits.html
@@ -71,6 +70,8 @@
 │   └── schema_db.py
 ├── app.py
 ├── inport.py
+├── readme.md
+├── README.md
 ├── services_repo.py
 ├── taxi.db.sql
 └── utils.py

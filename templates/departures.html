@@ -133,6 +133,81 @@
             background: #2a1a1a;
             border: 1px solid #ff5252;
         }
+
+        /* MOBILE RESPONSIVE */
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 1.3rem;
+                letter-spacing: 1px;
+            }
+
+            .header-container {
+                margin-bottom: 15px;
+                padding-bottom: 10px;
+            }
+            
+            table {
+                min-width: 100%;
+            }
+            
+            th, td {
+                padding: 8px 5px;
+                font-size: 0.85rem;
+            }
+
+            th {
+                font-size: 0.9rem;
+            }
+            
+            /* Κρύψε τη στήλη ΑΕΡΟΠΟΡΙΚΗ σε mobile */
+            th:nth-child(3),
+            td:nth-child(3) {
+                display: none;
+            }
+            
+            .airline-logo {
+                width: 24px;
+                height: 24px;
+            }
+            
+            .status-badge {
+                font-size: 0.7em;
+                padding: 3px 5px;
+            }
+            
+            .time-cell {
+                min-width: 55px;
+            }
+
+            .time-old {
+                font-size: 0.7em;
+            }
+
+            .flight-num {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* EXTRA SMALL SCREENS */
+        @media screen and (max-width: 480px) {
+            th, td {
+                padding: 6px 3px;
+                font-size: 0.8rem;
+            }
+
+            h1 {
+                font-size: 1.1rem;
+            }
+
+            .status-badge {
+                font-size: 0.65em;
+                padding: 2px 4px;
+            }
+        }
     </style>
 </head>
 <body>
