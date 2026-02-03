@@ -23,7 +23,20 @@ CREATE TABLE IF NOT EXISTS "credit_check" (
 	"debt_source"	TEXT,
 	"is_paid"	INTEGER DEFAULT 1,
 	"notes"	TEXT,
+	"paid_date"	TEXT,
 	PRIMARY KEY("id" AUTOINCREMENT)
+);
+CREATE TABLE IF NOT EXISTS "credit_transactions" (
+	"id"	INTEGER,
+	"credit_check_id"	INTEGER NOT NULL,
+	"transaction_type"	TEXT NOT NULL,
+	"transaction_date"	TEXT NOT NULL,
+	"amount"	INTEGER NOT NULL,
+	"debt_source"	TEXT,
+	"notes"	TEXT,
+	"created_at"	TEXT NOT NULL DEFAULT (datetime('now')),
+	PRIMARY KEY("id" AUTOINCREMENT),
+	FOREIGN KEY("credit_check_id") REFERENCES "credit_check"("id") ON DELETE CASCADE
 );
 CREATE TABLE IF NOT EXISTS "destinations" (
 	"id"	INTEGER,
@@ -125,6 +138,15 @@ CREATE INDEX IF NOT EXISTS "idx_lines_service_id" ON "service_lines" (
 );
 CREATE INDEX IF NOT EXISTS "idx_services_date" ON "services" (
 	"service_date"
+);
+CREATE INDEX IF NOT EXISTS "idx_transactions_credit_check" ON "credit_transactions" (
+	"credit_check_id"
+);
+CREATE INDEX IF NOT EXISTS "idx_transactions_date" ON "credit_transactions" (
+	"transaction_date"
+);
+CREATE INDEX IF NOT EXISTS "idx_transactions_type" ON "credit_transactions" (
+	"transaction_type"
 );
 CREATE UNIQUE INDEX IF NOT EXISTS "ux_hotels_name" ON "hotels" (
 	"name"

@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+
+{% block title %}Ιστορικό Συναλλαγών Credits{% endblock %}
+
+{% block styles %}
+<style>
+    .action-icon { 
+        text-decoration: none; 
+        font-size: 1.2em; 
+        margin-right: 5px; 
+        cursor: pointer;
+    }
+    
+    /* Responsive για Mobile */
+    @media (max-width: 768px) {
+        .card {
+            padding: 10px;
+        }
+        
+        /* Κρύψε τον κανονικό πίνακα */
+        table {
+            display: none;
+        }
+        
+        /* Δημιούργησε mobile-friendly cards */
+        .mobile-transaction {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .mobile-transaction-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .mobile-transaction-date {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .mobile-transaction-amount {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        .mobile-transaction-details {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .mobile-transaction-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+        }
+        
+        .mobile-transaction-label {
+            color: #666;
+            font-weight: 500;
+        }
+        
+        .mobile-transaction-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+        
+        /* Φόρμα αναζήτησης */
+        form[action] {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+            gap: 10px !important;
+        }
+        
+        .form-group {
+            width: 100%;
+        }
+        
+        .btn-primary {
+            width: 100%;
+        }
+    }
+
+    /* Desktop: Κρύψε τα mobile cards */
+    @media (min-width: 769px) {
+        .mobile-transactions {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1><span class="material-icons" style="font-size: 36px; vertical-align: middle;">history</span> Ιστορικό Συναλλαγών</h1>
+
+<div class="card" style="margin-bottom: 20px;">
+    <h2>Αναζήτηση</h2>
+    <form action="{{ url_for('credits.credits_history') }}" method="GET" style="display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end;">
+        <div class="form-group">
+            <label>Ημερομηνία</label>
+            <input type="date" name="date" value="{{ request.args.get('date', '') }}">
+        </div>
+        <button type="submit" class="btn-primary">Αναζήτηση</button>
+    </form>
+</div>
+
+<div class="card">
+    <!-- Desktop Table -->
+    <table>
+        <thead>
+            <tr>
+                <th>Ημερομηνία Συναλλαγής</th>
+                <th>Ποσό</th>
+                <th>Από</th>
+                <th>Αρχική Ημ/νία</th>
+                <th>Σημειώσεις</th>
+                <th style="text-align: center;">Ενέργειες</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in transactions %}
+            <tr>
+                <td>
+                    {% if t['transaction_date'] %}
+                        {{ t['transaction_date'].split('-')[2] }}-{{ t['transaction_date'].split('-')[1] }}-{{ t['transaction_date'].split('-')[0] }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td style="font-weight: bold;">
+                    {% if t['transaction_type'] == 'purchase' %}
+                        <span style="color: var(--danger-color);">➕ {{ t['amount'] }} Credits</span>
+                    {% else %}
+                        <span style="color: var(--success-color);">✓ {{ t['amount'] }} Credits</span>
+                    {% endif %}
+                </td>
+                <td>{{ t['debt_source'] or '-' }}</td>
+                <td>
+                    {% if t['original_date'] %}
+                        {{ t['original_date'].split('-')[2] }}-{{ t['original_date'].split('-')[1] }}-{{ t['original_date'].split('-')[0] }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>{{ t['notes'] or '-' }}</td>
+                <td style="text-align: center;">
+                    <a href="/credits/transaction/{{ t['id'] }}/edit" class="action-icon" title="Επεξεργασία">✏️</a>
+                    <form action="{{ url_for('credits.delete_transaction', id=t['id']) }}" method="POST" style="display: inline;" onsubmit="return confirm('Είστε σίγουρος ότι θέλετε να διαγράψετε αυτή τη συναλλαγή;')">
+                        <button type="submit" style="background: none; border: none; cursor: pointer; font-size: 1.2em; padding: 0;" title="Διαγραφή">🗑️</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Mobile View -->
+    <div class="mobile-transactions">
+        {% for t in transactions %}
+        <div class="mobile-transaction">
+            <div class="mobile-transaction-header">
+                <div class="mobile-transaction-date">
+                    {% if t['transaction_date'] %}
+                        {{ t['transaction_date'].split('-')[2] }}-{{ t['transaction_date'].split('-')[1] }}-{{ t['transaction_date'].split('-')[0] }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </div>
+                <div class="mobile-transaction-amount">
+                    {% if t['transaction_type'] == 'purchase' %}
+                        <span style="color: var(--danger-color);">➕ {{ t['amount'] }}</span>
+                    {% else %}
+                        <span style="color: var(--success-color);">✓ {{ t['amount'] }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="mobile-transaction-details">
+                <div class="mobile-transaction-row">
+                    <span class="mobile-transaction-label">Από:</span>
+                    <span>{{ t['debt_source'] or '-' }}</span>
+                </div>
+                <div class="mobile-transaction-row">
+                    <span class="mobile-transaction-label">Αρχική Ημ/νία:</span>
+                    <span>
+                        {% if t['original_date'] %}
+                            {{ t['original_date'].split('-')[2] }}-{{ t['original_date'].split('-')[1] }}-{{ t['original_date'].split('-')[0] }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </span>
+                </div>
+                {% if t['notes'] %}
+                <div class="mobile-transaction-row">
+                    <span class="mobile-transaction-label">Σημειώσεις:</span>
+                    <span>{{ t['notes'] }}</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="mobile-transaction-actions">
+                <a href="/credits/transaction/{{ t['id'] }}/edit" class="action-icon" title="Επεξεργασία" style="font-size: 1.5em;">✏️</a>
+                <form action="{{ url_for('credits.delete_transaction', id=t['id']) }}" method="POST" style="display: inline;" onsubmit="return confirm('Είστε σίγουρος ότι θέλετε να διαγράψετε αυτή τη συναλλαγή;')">
+                    <button type="submit" style="background: none; border: none; cursor: pointer; font-size: 1.5em; padding: 0;" title="Διαγραφή">🗑️</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if not transactions %}
+    <p style="text-align: center; padding: 20px; color: #999;">Δεν βρέθηκαν συναλλαγές</p>
+    {% endif %}
+</div>
+
+<!-- Κουμπί Επιστροφής -->
+<div style="margin-top: 20px;">
+    <a href="{{ url_for('credits.credits_check') }}" class="btn-primary" style="display: inline-flex; align-items: center; gap: 5px; text-decoration: none; width: auto;">
+        <span class="material-icons">arrow_back</span> Επιστροφή στα Credits
+    </a>
+</div>
+
+</script>
+{% endblock %}

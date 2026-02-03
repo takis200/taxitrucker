@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Επεξεργασία Συναλλαγής{% endblock %}
+
+{% block content %}
+<h1><span class="material-icons" style="font-size: 36px; vertical-align: middle;">edit</span> Επεξεργασία Συναλλαγής</h1>
+
+<div class="card">
+    <form action="{{ url_for('credits.edit_transaction', id=transaction['id']) }}" method="POST">
+        <div class="form-group">
+            <label>Ημερομηνία Συναλλαγής</label>
+            <input type="date" name="transaction_date" value="{{ transaction['transaction_date'] }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Ποσό (Credits)</label>
+            <input type="number" name="amount" value="{{ transaction['amount'] }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Από</label>
+            <input type="text" value="{{ transaction['debt_source'] or '-' }}" disabled style="background-color: #f0f0f0;">
+            <small style="color: #666;">Το πεδίο αυτό δεν μπορεί να αλλάξει</small>
+        </div>
+        
+        <div class="form-group">
+            <label>Αρχική Ημερομηνία</label>
+            <input type="text" value="{{ transaction['original_date'].split('-')[2] }}-{{ transaction['original_date'].split('-')[1] }}-{{ transaction['original_date'].split('-')[0] if transaction['original_date'] else '-' }}" disabled style="background-color: #f0f0f0;">
+        </div>
+        
+        <div class="form-group">
+            <label>Σημειώσεις</label>
+            <textarea name="notes" rows="3" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">{{ transaction['notes'] or '' }}</textarea>
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button type="submit" class="btn-primary" style="background-color: var(--secondary-color);">
+                <span class="material-icons">save</span> Αποθήκευση
+            </button>
+            <a href="{{ url_for('credits.credits_history') }}" class="btn-primary" style="background-color: #666; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
+                <span class="material-icons">cancel</span> Ακύρωση
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
